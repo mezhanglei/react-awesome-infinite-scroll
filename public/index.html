@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="msapplication-tap-highlight" content="no" />
+  <meta name="full-screen" content="true">
+  <meta name="screen-orientation" content="portrait">
+  <meta name="browsermode" content="application">
+  <meta name="x5-fullscreen" content="true">
+  <meta name="x5-orientation" content="portrait">
+  <meta name="x5-page-mode" content="app">
+  <meta name="renderer" content="webkit">
+  <meta name="format-detection" content="telephone=no, email=no" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="HandheldFriendly" content="true" />
+  <meta name="format-detection" content="telephone=no,email=no">
+  <meta name="viewport"
+    content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale= 1.0, minimum-scale=1.0, viewport-fit=cover">
+  <meta name="HandheldFriendly" content="true" />
+  <meta http-equiv="Cache-Control" content="no-cache" />
+  <%
+    var commonCSS = htmlWebpackPlugin.options.commonCSS;
+    for(var i = 0; i < commonCSS.length; i++){
+  %>
+  <link rel="stylesheet" href="<%=commonCSS[i]%>" />
+  <%
+    }
+  %>
+</head>
+
+<body>
+  <div id="root"></div>
+  <%
+    var commonJs = htmlWebpackPlugin.options.commonJs;
+    for(var i = 0; i < commonJs.length; i++){
+  %>
+  <script type="text/javascript" src="<%=commonJs[i]%>"></script>
+  <%
+    }
+  %>
+</body>
+
+</html>
