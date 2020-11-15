@@ -10,7 +10,7 @@ Scroll load list, relying on the browser scroll to load, the highlight is the co
 
 # disadvantages
 
-- [x] 没有封装更为强大的功能, 后续会持续更新考虑性能和更简易的api处理
+- [x] No more powerful functionality is encapsulated and will be continuously updated to take into account performance and easier API handling
 
 ### install
 ```
@@ -75,11 +75,11 @@ fetchMoreData = () => {
 | refreshFunction               | `function`            | -                                                              | The request function to refresh the data                                                                                          |
 | endMessage                    | `ReactNode`           | -                                                              | Display components when the load list is complete                                                                                          |
 | initialScrollY                | `number`              | -                                                              | Initializes the scroll distance                                                                                         |
-| scrollableTarget              | `HtmlElement`         | -                                                              | Set to scroll within the parent element                                             |
-| minPullDown, maxPullDown      | `number`              | -                                                              | Control the minimum and maximum drop-down distances when pulling down                                                                                          |
-| inverse                       | `boolean`             | -                                                              | Set up reverse loading                                                                                          |
-| thresholdValue                | `string | number`              | -                                                     | Threshold, which controls how far to scroll to trigger loading                                                                                          |
-
+| scrollableTarget              | `HtmlElement | string`| -                                                              | Set to scroll within the parent element
+|
+| minPullDown, maxPullDown      | `number`              | -                                                              | Control the minimum and maximum drop-down distances when pulling down                                                                                  |
+| inverse                       | `boolean`             | -                                                              | Set up reverse loading                                                                                  |
+| thresholdValue                | `string | number`            | -                                                       | Threshold, which controls how far to scroll to trigger loading                                                                                  |
 
 # TODO-LIST
 - [ ] Controls the number of loaded lists and the cache
