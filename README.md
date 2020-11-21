@@ -6,7 +6,7 @@ English | [中文说明](./README_CN.md)
 
 # Introduction?
 
-Scroll load list, relying on the browser scroll to load, the highlight is the complex list of the list loaded logic, so that you more easily simple to achieve unlimited list loading, simple configuration.
+Scroll load list, relying on the browser scroll to load, it's easy to loading list by scroll.
 
 # disadvantages
 
