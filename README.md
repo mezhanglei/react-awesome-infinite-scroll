@@ -75,11 +75,10 @@ fetchMoreData = () => {
 | refreshFunction               | `function`            | -                                                              | The request function to refresh the data                                                                                          |
 | endMessage                    | `ReactNode`           | -                                                              | Display components when the load list is complete                                                                                          |
 | initialScrollY                | `number`              | -                                                              | Initializes the scroll distance                                                                                         |
-| scrollableTarget              | `HtmlElement | string`| -                                                              | Set to scroll within the parent element
-|
+| scrollableTarget              | `HtmlElement | string`| -                                                              | Set to scroll within the parent element                 |
 | minPullDown, maxPullDown      | `number`              | -                                                              | Control the minimum and maximum drop-down distances when pulling down                                                                                  |
 | inverse                       | `boolean`             | -                                                              | Set up reverse loading                                                                                  |
-| thresholdValue                | `string | number`            | -                                                       | Threshold, which controls how far to scroll to trigger loading                                                                                  |
+| thresholdValue                | `string | number`     | -                                                              | Threshold, which controls how far to scroll to trigger loading                                                                                  |
 
 # TODO-LIST
 - [ ] Controls the number of loaded lists and the cache

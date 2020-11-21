@@ -76,10 +76,10 @@ fetchMoreData = () => {
 | endMessage                    | `ReactNode`           | -                                                              | 加载列表完完成时的展示组件                                                                                          |
 | initialScrollY                | `number`              | -                                                              | 初始化滚动距离                                                                                         |
 | scrollableTarget              | `HtmlElement | string`| -                                                              | 设置在该父元素内滚动
-|
+                    |
 | minPullDown, maxPullDown      | `number`              | -                                                              | 当下拉刷新时控制最小下拉和最大下拉距离                                                                                  |
 | inverse                       | `boolean`             | -                                                              | 设置反向加载                                                                                  |
-| thresholdValue                | `string | number`            | -                                                       | 阈值,用来控制滚动到什么程度(距离)触发加载                                                                                  |
+| thresholdValue                | `string | number`     | -                                                              | 阈值,用来控制滚动到什么程度(距离)触发加载                                                                                  |
 
 # TODO-LIST
 - [ ] 控制加载的列表数量及记忆回溯
