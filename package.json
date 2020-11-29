@@ -1,6 +1,6 @@
 {
   "name": "react-awesome-infinite-scroll",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "简单好用的滚动列表加载组件",
   "main": "lib/bundle.js",
   "repository": "https://github.com/mezhanglei",
