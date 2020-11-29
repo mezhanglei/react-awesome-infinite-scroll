@@ -1,7 +1,9 @@
 import React, { Component } from 'react';
+import { throttle } from './utils/common';
 import { ThresholdUnits, parseThreshold } from './utils/threshold';
 import Raf from "./utils/requestAnimationFrame";
-import { isDom, getScroll, getClient, getPositionInPage } from "./utils/dom";
+import { getScroll, getClient, getPositionInPage } from "./utils/dom";
+import { isDom } from "./utils/type";
 
 /**
  * 滚动加载列表组件:
@@ -28,12 +30,12 @@ export default class InfiniteScroll extends Component {
         super(props);
 
         this.state = {
-            loadingEnd: false,
+            loading: false,
             showRelease: false,
             _self: this
         };
         this.pullAreaHeight = 0;
-        this.throttledOnScrollListener = this.onScrollListener;
+        this.throttledOnScrollListener = throttle(this.onScrollListener).bind(this);
         this.onStart = this.onStart.bind(this);
         this.onMove = this.onMove.bind(this);
         this.onEnd = this.onEnd.bind(this);
@@ -44,54 +46,56 @@ export default class InfiniteScroll extends Component {
     dragging = false;
 
     componentDidMount() {
-        const {
-            initialScrollY,
-            pullDownToRefresh
-        } = this.props;
-        // 滚动根节点(文档根节点不能绑定事件)
-        this.el = this.getScrollableTarget() === (document.body || document.documentElement) ? (document || window) : this.getScrollableTarget();
+        setTimeout(() => {
+            const {
+                initialScrollY,
+                pullDownToRefresh
+            } = this.props;
+            // 滚动根节点(文档根节点不能绑定事件)
+            this.el = this.getScrollableTarget() === (document.body || document.documentElement) ? (document || window) : this.getScrollableTarget();
 
-        if (this.el) {
-            this.el.addEventListener('scroll', this
-                .throttledOnScrollListener);
-        }
+            if (this.el) {
+                this.el.addEventListener('scroll', this
+                    .throttledOnScrollListener);
+            }
 
-        if (
-            typeof initialScrollY === 'number' &&
-            this.el &&
-            isDom(this.el) &&
-            this.el.scrollHeight > initialScrollY
-        ) {
-            this.el.scrollTo(0, initialScrollY);
-        }
+            if (
+                typeof initialScrollY === 'number' &&
+                this.el &&
+                isDom(this.el) &&
+                this.el.scrollHeight > initialScrollY
+            ) {
+                this.el.scrollTo(0, initialScrollY);
+            }
 
-        if (pullDownToRefresh && this.el) {
-            this.el.addEventListener('touchstart', this.onStart, { passive: false });
-            this.el.addEventListener('touchmove', this.onMove, { passive: false });
-            this.el.addEventListener('touchend', this.onEnd, { passive: false });
+            if (pullDownToRefresh && this.el) {
+                this.el.addEventListener('touchstart', this.onStart);
+                this.el.addEventListener('touchmove', this.onMove);
+                this.el.addEventListener('touchend', this.onEnd);
 
-            this.el.addEventListener('mousedown', this.onStart, { passive: false });
-            this.el.addEventListener('mousemove', this.onMove, { passive: false });
-            this.el.addEventListener('mouseup', this.onEnd, { passive: false });
-            // 下拉区域的原始高度
-            this.pullAreaHeight = this.pullArea?.firstChild?.getBoundingClientRect()?.height || 0;
-        }
+                this.el.addEventListener('mousedown', this.onStart);
+                this.el.addEventListener('mousemove', this.onMove);
+                this.el.addEventListener('mouseup', this.onEnd);
+                // 下拉区域的原始高度
+                this.pullAreaHeight = this.pullArea?.firstChild?.getBoundingClientRect()?.height || 0;
+            }
+        }, 0);
     }
 
     componentWillUnmount() {
         const { pullDownToRefresh } = this.props;
         if (this.el) {
             this.el.removeEventListener('scroll', this
-                .throttledOnScrollListener, { passive: false });
+                .throttledOnScrollListener);
 
             if (pullDownToRefresh) {
-                this.el.removeEventListener('touchstart', this.onStart, { passive: false });
-                this.el.removeEventListener('touchmove', this.onMove, { passive: false });
-                this.el.removeEventListener('touchend', this.onEnd, { passive: false });
+                this.el.removeEventListener('touchstart', this.onStart);
+                this.el.removeEventListener('touchmove', this.onMove);
+                this.el.removeEventListener('touchend', this.onEnd);
 
-                this.el.removeEventListener('mousedown', this.onStart, { passive: false });
-                this.el.removeEventListener('mousemove', this.onMove, { passive: false });
-                this.el.removeEventListener('mouseup', this.onEnd, { passive: false });
+                this.el.removeEventListener('mousedown', this.onStart);
+                this.el.removeEventListener('mousemove', this.onMove);
+                this.el.removeEventListener('mouseup', this.onEnd);
                 // 取消raf
                 Raf.cancelRaf(this.resetDrag);
             }
@@ -105,18 +109,27 @@ export default class InfiniteScroll extends Component {
             if (React.Children.count(preProps.children) != React.Children.count(nextProps.children)) {
                 _self.finishTrigger = false;
                 return {
-                    loadingEnd: false,
+                    loading: false,
+                    preProps: nextProps
+                };
+            }
+
+            if (nextProps.scrollableTarget != preProps.scrollableTarget) {
+                return {
+                    scrollableTarget: nextProps.scrollableTarget,
                     preProps: nextProps
                 };
             }
         }
-        return { loadingEnd: false, preProps: nextProps };
+        return { scrollableTarget: nextProps.scrollableTarget, preProps: nextProps };
     }
 
     // 获取滚动的根节点
     getScrollableTarget = () => {
-        const { height, scrollableTarget } = this.props;
-        if (isDom(scrollableTarget) && height) {
+        const { height } = this.props;
+        const { scrollableTarget } = this.state;
+
+        if (isDom(scrollableTarget)) {
             return scrollableTarget;
         } else if (typeof scrollableTarget === 'string') {
             return document.querySelector(scrollableTarget);
@@ -225,7 +238,7 @@ export default class InfiniteScroll extends Component {
         );
     }
 
-    isElementAtBottom(target, thresholdValue = 0.6) {
+    isElementAtBottom(target, thresholdValue = 0.8) {
         const clientHeight = getClient(target).y;
         const scrollTop = getScroll(target).y;
         const threshold = parseThreshold(thresholdValue);
@@ -255,18 +268,18 @@ export default class InfiniteScroll extends Component {
             setTimeout(() => onScroll && onScroll(event), 0);
         }
 
-        if (this.finishTrigger) return;
-
         const target = this.getScrollableTarget();
-
         const atBottom = inverse
             ? this.isElementAtTop(target, thresholdValue)
             : this.isElementAtBottom(target, thresholdValue);
 
+        if (this.finishTrigger) return;
+
         // 加载数据
         if (atBottom && hasMore) {
+            // console.log(11111)
             this.finishTrigger = true;
-            this.setState({ loadingEnd: true });
+            this.setState({ loading: true });
             next && next();
         }
 
@@ -288,12 +301,8 @@ export default class InfiniteScroll extends Component {
             hasMore,
             className
         } = this.props;
-        const containerStyle = {
-            height: height || 'auto',
-            overflow: 'auto',
-            WebkitOverflowScrolling: 'touch',
-            ...style,
-        };
+
+        const { scrollableTarget } = this.state;
 
         const hasChildren = !!(
             children &&
@@ -301,10 +310,19 @@ export default class InfiniteScroll extends Component {
             children.length
         );
 
-        // 当设置了固定高度, 下拉刷新时阻止元素溢出到外面显示
+        // 当设置了滚动固定高度, 下拉刷新时阻止元素溢出到外面显示
         const outerDivStyle = pullDownToRefresh && height
             ? { overflow: 'hidden' }
             : {};
+
+        // 当组件滚动的容器在外部（即设置了scrollableTarget），则设置overflow: visible, 以免组件内部出现滚动条
+        const containerStyle = {
+            height: height || 'auto',
+            overflow: scrollableTarget ? 'visible' : "auto",
+            WebkitOverflowScrolling: 'touch',
+            paddingBottom: "16px",
+            ...style,
+        };
 
         return (
             <div
@@ -336,7 +354,7 @@ export default class InfiniteScroll extends Component {
                         </div>
                     )}
                     {children}
-                    {(this.state.loadingEnd || (!this.state.loadingEnd && !hasChildren)) && hasMore && loader}
+                    {(this.state.loading || (!this.state.loading && !hasChildren)) && hasMore && loader}
                     {!hasMore && endMessage}
                 </div>
             </div>
