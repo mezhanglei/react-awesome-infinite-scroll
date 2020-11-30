@@ -63,3 +63,52 @@ export function getClient(el = (document.body || document.documentElement)) {
         return { x, y };
     }
 };
+
+/**
+ * 判断目标元素内部是否可以滚动
+ * @param {*} ele 内容可以scroll的元素
+ */
+export function eleCanScroll(ele) {
+    if (!isDom(ele)) {
+        return;
+    }
+    if (ele.scrollTop > 0) {
+        return true;
+    } else {
+        ele.scrollTop++;
+        const top = ele.scrollTop;
+        return top > 0;
+    }
+}
+
+/**
+ * 获取目标元素的可滚动父元素
+ * @param {*} target 目标元素
+ * @param {*} step 遍历层数，设置可以限制向上冒泡查找的层数
+ */
+export function getScrollParent(target, step) {
+    const root = [document.body, document.documentElement];
+    if (root.indexOf(target) > -1) {
+        return document.body || document.documentElement;
+    };
+
+    let scrollParent = target.parentNode;
+
+    if (step) {
+        while (root.indexOf(scrollParent) == -1 && step > 0) {
+            if (eleCanScroll(scrollParent)) {
+                return scrollParent;
+            }
+            scrollParent = scrollParent.parentNode;
+            step--;
+        }
+    } else {
+        while (root.indexOf(scrollParent) == -1) {
+            if (eleCanScroll(scrollParent)) {
+                return scrollParent;
+            }
+            scrollParent = scrollParent.parentNode;
+        }
+    }
+    return document.body || document.documentElement;
+};

@@ -4,7 +4,7 @@
  * 使用: 1. 实例化一个对象: const fn = throttle(函数)
  *       2. 执行fn()
  */
-export function throttle(fn, time = 500) {
+export function throttle(fn, time = 160) {
     let timer = null;
     return function () {
         if (!timer) {

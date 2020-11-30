@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { throttle } from './utils/common';
 import { ThresholdUnits, parseThreshold } from './utils/threshold';
 import Raf from "./utils/requestAnimationFrame";
-import { getScroll, getClient, getPositionInPage } from "./utils/dom";
+import { getScroll, getClient, getPositionInPage, getScrollParent } from "./utils/dom";
 import { isDom } from "./utils/type";
 
 /**
@@ -17,12 +17,15 @@ import { isDom } from "./utils/type";
  * refreshFunction: function 刷新列表的方法
  * endMessage: ReactNode 数据加载完了展示的组件
  * initialScrollY: number 列表初始化加载时滚动到的位置
- * scrollableTarget: HtmlElement 在该父元素内滚动
+ * scrollableParent: HtmlElement 不设置则默认自动搜索滚动父元素， 设置在该父元素内滚动，建议设置以节省性能，设置forbidTrigger可以阻止滚动触发
+ * forbidTrigger: boolean 禁止滚动加载触发，当页面上有多个滚动列表且滚动父元素相同，则可以通过此api禁止滚动触发加载
  * minPullDown, maxPullDown: 下拉刷新时, 设置最小下拉高度和最大下拉高度
  * onScroll: function (e) {} 滚动监听函数
  * inverse: boolean 反向滚动加载
  * thresholdValue: string | number 阈值,用来控制滚动到什么程度(距离)触发加载
+ * containerStyle: object 组件内部的style样式
  */
+
 export default class InfiniteScroll extends Component {
     static defaultProps = {
     }
@@ -42,8 +45,8 @@ export default class InfiniteScroll extends Component {
     }
 
     lastScrollTop = 0;
-    finishTrigger = false;
     dragging = false;
+    finishTrigger = false;
 
     componentDidMount() {
         setTimeout(() => {
@@ -51,9 +54,11 @@ export default class InfiniteScroll extends Component {
                 initialScrollY,
                 pullDownToRefresh
             } = this.props;
-            // 滚动根节点(文档根节点不能绑定事件)
-            this.el = this.getScrollableTarget() === (document.body || document.documentElement) ? (document || window) : this.getScrollableTarget();
 
+            // 用来自动获取滚动父节点
+            this.scrollParent = this.getScrollableTarget();
+            // 滚动父节点绑定事件(文档根节点不能绑定事件)
+            this.el = this.scrollParent === (document.body || document.documentElement) ? (document || window) : this.scrollParent;
             if (this.el) {
                 this.el.addEventListener('scroll', this
                     .throttledOnScrollListener);
@@ -104,7 +109,6 @@ export default class InfiniteScroll extends Component {
 
     static getDerivedStateFromProps(nextProps, preState) {
         const { preProps, _self } = preState;
-
         if (preProps) {
             if (React.Children.count(preProps.children) != React.Children.count(nextProps.children)) {
                 _self.finishTrigger = false;
@@ -114,29 +118,32 @@ export default class InfiniteScroll extends Component {
                 };
             }
 
-            if (nextProps.scrollableTarget != preProps.scrollableTarget) {
+            if (nextProps.scrollableParent != preProps.scrollableParent) {
                 return {
-                    scrollableTarget: nextProps.scrollableTarget,
+                    scrollableParent: nextProps.scrollableParent,
                     preProps: nextProps
                 };
             }
         }
-        return { scrollableTarget: nextProps.scrollableTarget, preProps: nextProps };
+        return { scrollableParent: nextProps.scrollableParent, preProps: nextProps };
     }
 
-    // 获取滚动的根节点
+    // 获取滚动的父节点
     getScrollableTarget = () => {
         const { height } = this.props;
-        const { scrollableTarget } = this.state;
+        const { scrollableParent } = this.state;
 
-        if (isDom(scrollableTarget)) {
-            return scrollableTarget;
-        } else if (typeof scrollableTarget === 'string') {
-            return document.querySelector(scrollableTarget);
+        const scrollParent = getScrollParent(this.scrollContainer);
+
+        if (isDom(scrollableParent)) {
+            return scrollableParent;
+        } else if (typeof scrollableParent === 'string') {
+            return document.querySelector(scrollableParent);
         } else if (height) {
             return this.scrollContainer;
+        } else {
+            return scrollParent;
         }
-        return document.body || document.documentElement;
     };
 
     onStart = (evt) => {
@@ -261,6 +268,7 @@ export default class InfiniteScroll extends Component {
             inverse,
             thresholdValue,
             hasMore,
+            forbidTrigger,
             next
         } = this.props;
 
@@ -268,16 +276,15 @@ export default class InfiniteScroll extends Component {
             setTimeout(() => onScroll && onScroll(event), 0);
         }
 
-        const target = this.getScrollableTarget();
+        if (this.finishTrigger || forbidTrigger) return;
+
+        const target = this.scrollParent;
         const atBottom = inverse
             ? this.isElementAtTop(target, thresholdValue)
             : this.isElementAtBottom(target, thresholdValue);
 
-        if (this.finishTrigger) return;
-
         // 加载数据
         if (atBottom && hasMore) {
-            // console.log(11111)
             this.finishTrigger = true;
             this.setState({ loading: true });
             next && next();
@@ -291,7 +298,7 @@ export default class InfiniteScroll extends Component {
     render() {
         const {
             height,
-            style,
+            containerStyle,
             children,
             pullDownToRefresh,
             releaseToRefreshContent,
@@ -302,7 +309,7 @@ export default class InfiniteScroll extends Component {
             className
         } = this.props;
 
-        const { scrollableTarget } = this.state;
+        const { scrollableParent } = this.state;
 
         const hasChildren = !!(
             children &&
@@ -315,13 +322,13 @@ export default class InfiniteScroll extends Component {
             ? { overflow: 'hidden' }
             : {};
 
-        // 当组件滚动的容器在外部（即设置了scrollableTarget），则设置overflow: visible, 以免组件内部出现滚动条
-        const containerStyle = {
+        // 当组件滚动的容器在外部（即设置了scrollableParent），则设置overflow: visible, 以免组件内部出现滚动条
+        const insideStyle = {
             height: height || 'auto',
-            overflow: scrollableTarget ? 'visible' : "auto",
+            overflow: scrollableParent ? 'visible' : "auto",
             WebkitOverflowScrolling: 'touch',
             paddingBottom: "16px",
-            ...style,
+            ...containerStyle,
         };
 
         return (
@@ -332,7 +339,7 @@ export default class InfiniteScroll extends Component {
                 <div
                     className={`infinite-scroll-component ${className || ''}`}
                     ref={(node) => (this.scrollContainer = node)}
-                    style={containerStyle}
+                    style={insideStyle}
                 >
                     {pullDownToRefresh && (
                         <div

@@ -2,15 +2,22 @@
 
 English | [中文说明](./README_CN.md)
 
-[![Version](https://img.shields.io/badge/version-1.0.1-green)](https://www.npmjs.com/package/react-awesome-infinite-scroll)
+[![Version](https://img.shields.io/badge/version-2.0.0-green)](https://www.npmjs.com/package/react-awesome-infinite-scroll)
 
 # Introduction?
 
 Scroll load list, relying on the browser scroll to load, it's easy to loading list by scroll.
 
-# disadvantages
+# featrues
 
-- [x] No more powerful functionality is encapsulated and will be continuously updated to take into account performance and easier API handling
+- [x] Support for manually setting the scrollableParent 'scrollableParent' and asynchronous parent, and automatically get the scrollparent by default
+- [x] Both internal and external scrolling of the component can be triggered，The scrolling behavior on the outside can be triggered by setting 'scrollableParent', and the scrolling on the inside can be triggered by setting 'height'
+- [x] Controls the boundary only by `hashMore`, so easy
+- [x] Custom component
+
+# Matters
+
+When the scrolling parent element of multiple lists on the page is the same, it is impossible to distinguish which list is currently scrolling, so 'forbidTrigger' is needed to prohibit the scrolling loading behavior of non-current lists.
 
 ### install
 ```
@@ -75,10 +82,12 @@ fetchMoreData = () => {
 | refreshFunction               | `function`            | -                                                              | The request function to refresh the data                                                                                          |
 | endMessage                    | `ReactNode`           | -                                                              | Display components when the load list is complete                                                                                          |
 | initialScrollY                | `number`              | -                                                              | Initializes the scroll distance                                                                                         |
-| scrollableTarget              | `HtmlElement / string`| -                                                              | Set to scroll within the parent element                 |
+| scrollableParent              | `HtmlElement / string`| -                                                              | Set to scroll within the parent element，Auto bubble search if not set，Settings are recommended to improve performance                 |
 | minPullDown, maxPullDown      | `number`              | -                                                              | Control the minimum and maximum drop-down distances when pulling down                                                                                  |
 | inverse                       | `boolean`             | -                                                              | Set up reverse loading                                                                                  |
 | thresholdValue                | `string / number`     | -                                                              | Threshold, which controls how far to scroll to trigger loading                                                                                  |
+| forbidTrigger                 | `boolean`             | -                                                              | Disable scrolltrigger. When there are multiple scrolllists on the page with the same scrollparent, you can forbid scrolltrigger loading through this API                                                                                  |
+| containerStyle                | `object`     | -                                                                       | style of the container                                                                                  |
 
 # TODO-LIST
 - [ ] Controls the number of loaded lists and the cache
