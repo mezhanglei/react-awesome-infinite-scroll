@@ -74,7 +74,7 @@ fetchMoreData = () => {
 | next                          | `function`            | -                                                              | 加载列表的请求函数                                                                                  |
 | hasMore                       | `boolean`             | `true`                                                         | 控制列表是否加载完成(初始化时需要手动赋值`true`)                                                                               |
 | loader                        | `ReactNode`           | -                                                              | 加载时的展示组件                                                  |
-| height                        | `number`              | -                                                              | 设置固定高度加载                                                                              |
+| height                        | `number`              | -                                                              | 设置固定高度滚动加载,和`scrollableParent`二选一, `scrollableParent`用来设置滚动容器                                                                              |
 | onScroll                      | `function`            | -                                                              | 滚动触发函数              |
 | pullDownToRefresh             | `boolean`             | `false`                                                        | 设置是否可以下拉刷新                         |
 | pullDownToRefreshContent      | `ReactNode`           | -                                                              | 下拉时的展示组件                                                                                          |
