@@ -2,7 +2,7 @@
 
 English | [中文说明](./README_CN.md)
 
-[![Version](https://img.shields.io/badge/version-2.0.0-green)](https://www.npmjs.com/package/react-awesome-infinite-scroll)
+[![Version](https://img.shields.io/badge/version-2.0.2-green)](https://www.npmjs.com/package/react-awesome-infinite-scroll)
 
 # Introduction?
 
@@ -30,41 +30,92 @@ yarn add react-awesome-infinite-scroll
 ```javascript
 import InfiniteScroll from 'react-awesome-infinite-scroll';
 
-this.state = {
-  items: Array.from({ length: 10 }),
-  hasMore: true
+componentDidMount() {
+    // first loading
+    setTimeout(() => {
+        const res = Array.from({ length: 100 })
+        this.setState({
+            list: res,
+            hasMore: res?.length < this.state.total
+        });
+    }, 100);
+}
+
+// loading more
+fetchMoreData = () => {
+    const { maxLength, list = [], total } = this.state;
+    if (list.length >= maxLength) {
+        this.setState({ hasMore: false });
+        return;
+    }
+    if (list.length >= total) {
+        this.setState({ hasMore: false });
+        return;
+    }
+    // simulate request
+    new Promise((resolve, reject) => {
+        setTimeout(() => {
+            // creat a fake 'error' ,so not Use this in real life ;
+            // if (list.length >= 300 && !this.state.isError) {
+            //     reject();
+            // };
+            resolve(list.concat(Array.from({ length: 20 })))
+        }, 500);
+    }).then(res => {
+        this.setState({
+            list: res
+        });
+    }).catch(err => {
+        this.setState({
+            isError: true
+        });
+    })
 };
 
-fetchMoreData = () => {
-   if (this.state.items.length >= 500) {
-       this.setState({ hasMore: false });
-       return;
-   }
-   // a fake async api call like which sends
-   // 20 more records in .5 secs
-   setTimeout(() => {
-       this.setState({
-           items: this.state.items.concat(Array.from({ length: 20 })),
-       });
-   }, 500);
-};
-<InfiniteScroll
-    next={this.fetchMoreData}
-    hasMore={this.state.hasMore}
-    loader={<h4>Loading...</h4>}
-    height={200}
-    endMessage={
-        <p style={{ textAlign: 'center' }}>
-            <b>Yay! You have seen it all</b>
-        </p>
-    }
-  >
-    {this.state.items.map((_, index) => (
-        <div style={{ height: 30, border: '1px solid green', margin: 6, padding: 8 }} key={index} >
-            div - #{index}
-        </div>
-    ))}
-</InfiniteScroll>
+// reload
+reload = () => {
+    new Promise((resolve, reject) => {
+        setTimeout(() => {
+            const { list = [] } = this.state;
+            resolve(list.concat(Array.from({ length: 20 })))
+        }, 500);
+    }).then(res => {
+        this.setState({
+            list: res
+        });
+    }).catch(err => {
+        this.setState({
+            isError: true
+        });
+    });
+}
+
+......
+
+<div className="parent" style={{height: "500px"}}>
+    <InfiniteScroll
+        containerStyle={{ overflow: "hidden" }}
+        next={this.fetchMoreData}
+        scrollableParent={document.querySelector(".parent")} // or set "height", only one is need
+        // height={500} // height
+        hasMore={hasMore}
+        isError={isError}
+        loader={<div style={{ textAlign: 'center' }}><h4>Loading...</h4></div>}
+        errorMsg={<div style={{ textAlign: "center" }}><span>加载失败？点击<a onClick={this.reload}>重新加载</a></span></div>}
+        endMessage={
+            (list?.length && !maxLength) ?
+                <div style={{ textAlign: 'center', fontWeight: 'normal', color: '#999' }}>
+                    <span>NO MORE</span>
+                </div> : null
+        }
+      >
+          {list.map((_, index) => (
+              <div style={{ height: 30, border: '1px solid green', margin: 6, padding: 8 }} key={index} >
+                  div - #{index}
+              </div>
+          ))}
+    </InfiniteScroll>
+</div>
 ```
 
 ## Attributes
@@ -81,6 +132,8 @@ fetchMoreData = () => {
 | releaseToRefreshContent       | `ReactNode`           | -                                                              | Release the pull-down refreshed display component                                                                                          |
 | refreshFunction               | `function`            | -                                                              | The request function to refresh the data                                                                                          |
 | endMessage                    | `ReactNode`           | -                                                              | Display components when the load list is complete                                                                                          |
+| isError                       | `boolean`             | -                                                              | loading error status                                                                                          |
+| errorMsg                      | `ReactNode`           | -                                                              | Display components when the load list is loading error                                                                                          |
 | initialScrollY                | `number`              | -                                                              | Initializes the scroll distance                                                                                         |
 | scrollableParent              | `HtmlElement / string`| -                                                              | Set to scroll within the parent element，Auto bubble search if not set，Settings are recommended to improve performance                 |
 | minPullDown, maxPullDown      | `number`              | -                                                              | Control the minimum and maximum drop-down distances when pulling down                                                                                  |
