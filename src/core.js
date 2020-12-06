@@ -86,8 +86,16 @@ const InfiniteScroll = (props) => {
         }
     };
 
-    // 当加载数目变化时, 重置一些状态
+    // 当列表加载完成时, 再监听事件并重置一些状态
     useEffect(() => {
+        // 绑定事件
+        const target = getScrollableTarget();
+        scrollableRef.current = target;
+        if (target) {
+            initDom(target);
+        }
+
+        // 加载下一个列表时重置状态
         if (React.Children.count(children)) {
             if (loadNumRef.current > 1) {
                 setFinishTrigger(false);
@@ -97,6 +105,10 @@ const InfiniteScroll = (props) => {
             }
             loadNumRef.current = loadNumRef.current + 1;
         }
+
+        return () => {
+            removeEvent();
+        };
     }, [React.Children.count(children)]);
 
     // 实时监听状态isError
@@ -106,20 +118,6 @@ const InfiniteScroll = (props) => {
         // 更新视图
         setIsError(props.isError);
     }, [props.isError]);
-
-    // 在监听事件里获取不到最新的state值
-    useEffect(() => {
-        const target = getScrollableTarget();
-        scrollableRef.current = target;
-        if (target) {
-            initDom(target);
-        }
-
-        return () => {
-            removeEvent();
-        };
-    }, [props.scrollableParent]);
-
 
     const onScrollListener = (event) => {
         if (typeof onScroll === 'function') {
