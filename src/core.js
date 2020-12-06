@@ -81,7 +81,7 @@ const InfiniteScroll = (props) => {
         } else if (height) {
             return scrollContainerDom;
         } else {
-            const target = getScrollParent(scrollContainerDom)
+            const target = getScrollParent(scrollContainerDom);
             return target;
         }
     };
@@ -93,6 +93,15 @@ const InfiniteScroll = (props) => {
         scrollableRef.current = target;
         if (target) {
             initDom(target);
+            // 节点设置警告
+            if (target == scrollContainerRef.current && props.height) {
+                console.error(`"scrollableParent" and "height" only need one`);
+            }
+
+            // 设置警告
+            if (props.height && props.containerStyle?.overflow == "hidden") {
+                console.error(`the "containerStyle" can't be "hidden", because "height" is setted`);
+            };
         }
 
         // 加载下一个列表时重置状态
@@ -314,10 +323,10 @@ const InfiniteScroll = (props) => {
         ? { overflow: 'hidden' }
         : {};
 
-    // 当组件滚动的容器在外部（即设置了scrollableParent），则设置overflow: visible, 以免组件内部出现滚动条
+    // 当组件滚动的容器在外部（即设置了scrollableParent），则设置overflow: hidden, 以免组件内部出现滚动条
     const insideStyle = {
         height: height || 'auto',
-        overflow: scrollableRef.current ? 'visible' : "auto",
+        overflow: props.height ? 'auto' : "hidden",
         WebkitOverflowScrolling: 'touch',
         paddingBottom: "16px",
         ...containerStyle,

@@ -79,7 +79,6 @@ class Home extends React.Component {
         return (
             <div className="cart-index">
                 <InfiniteScroll
-                    containerStyle={{ overflow: "hidden" }}
                     next={this.fetchMoreData}
                     scrollableParent={document.querySelector(".cart-index")}
                     hasMore={hasMore}

@@ -94,7 +94,6 @@ reload = () => {
 
 <div className="parent" style={{height: "500px"}}>
     <InfiniteScroll
-        containerStyle={{ overflow: "hidden" }}
         next={this.fetchMoreData}
         scrollableParent={document.querySelector(".parent")} // or set "height", only one is need
         // height={500} // height
