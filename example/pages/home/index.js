@@ -77,7 +77,7 @@ class Home extends React.Component {
     render() {
         const { hasMore, isError, list = [], maxLength } = this.state;
         return (
-            <div className="cart-index">
+            <div className="cart-index" style={{height: "500px", overflow: "auto"}}>
                 <InfiniteScroll
                     next={this.fetchMoreData}
                     scrollableParent={document.querySelector(".cart-index")}

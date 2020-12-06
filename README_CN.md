@@ -92,7 +92,7 @@ reload = () => {
 
 ......
 
-<div className="parent" style={{height: "500px"}}>
+<div className="parent" style={{height: "500px", overflow: "auto"}}> // Currently set the outside scroll
     <InfiniteScroll
         next={this.fetchMoreData}
         scrollableParent={document.querySelector(".parent")} // 和height二选一，选一种方式滚动
