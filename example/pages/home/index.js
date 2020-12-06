@@ -7,7 +7,7 @@ class Home extends React.Component {
         super(props);
         this.state = {
             hasMore: true,
-            total: 10000
+            total: 800
         };
     }
 

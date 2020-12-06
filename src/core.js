@@ -1,4 +1,4 @@
-import React, { Component, useEffect, useState, useRef } from 'react';
+import React, { Component, useEffect, useState, useRef, useMemo } from 'react';
 import { throttle } from './utils/common';
 import { ThresholdUnits, parseThreshold } from './utils/threshold';
 import Raf from "./utils/requestAnimationFrame";
@@ -65,8 +65,10 @@ const InfiniteScroll = (props) => {
     const pullAreaRef = useRef();
     const scrollableRef = useRef();
     const eventRef = useRef();
-    let dragging = false;
+    const errorRef = useRef();
+    const loadNumRef = useRef(0);
     let lastScrollTop = 0;
+    let dragging = false;
 
     // 获取滚动的父节点
     const getScrollableTarget = () => {
@@ -84,16 +86,28 @@ const InfiniteScroll = (props) => {
         }
     };
 
+    // 当加载数目变化时, 重置一些状态
     useEffect(() => {
-        setFinishTrigger(false);
-        setIsError(false);
-        setLoading(false);
+        if (React.Children.count(children)) {
+            if (loadNumRef.current > 1) {
+                setFinishTrigger(false);
+                setLoading(false);
+                errorRef.current = false;
+                setIsError(false);
+            }
+            loadNumRef.current = loadNumRef.current + 1;
+        }
     }, [React.Children.count(children)]);
 
+    // 实时监听状态isError
     useEffect(() => {
+        // 实时监听
+        errorRef.current = props.isError;
+        // 更新视图
         setIsError(props.isError);
     }, [props.isError]);
 
+    // 在监听事件里获取不到最新的state值
     useEffect(() => {
         const target = getScrollableTarget();
         scrollableRef.current = target;
@@ -105,6 +119,28 @@ const InfiniteScroll = (props) => {
             removeEvent();
         };
     }, [props.scrollableParent]);
+
+
+    const onScrollListener = (event) => {
+        if (typeof onScroll === 'function') {
+            setTimeout(() => onScroll && onScroll(event), 0);
+        }
+
+        if (finishTrigger || forbidTrigger || errorRef.current) return;
+
+        const target = scrollableRef.current;
+        lastScrollTop = target.scrollTop;
+        const atBottom = inverse
+            ? isElementAtTop(target, thresholdValue)
+            : isElementAtBottom(target, thresholdValue);
+
+        // 加载数据
+        if (atBottom && hasMore) {
+            setFinishTrigger(true);
+            setLoading(true);
+            next && next();
+        }
+    };
 
 
     // 初始化绑定事件(滚动节点可能是异步也可能是同步)
@@ -203,11 +239,8 @@ const InfiniteScroll = (props) => {
             throw new Error(`"refreshFunction" is not function or missing`);
         }
 
-        if (showRelease) {
-            refreshFunction && refreshFunction();
-            setShowRelease(false);
-        }
-
+        refreshFunction && refreshFunction();
+        setShowRelease(false);
         Raf.setRaf(resetDrag);
         setStartY(0);
         setPreStartY(0);
@@ -272,30 +305,6 @@ const InfiniteScroll = (props) => {
         );
     };
 
-    const onScrollListener = (event) => {
-
-        if (typeof onScroll === 'function') {
-            setTimeout(() => onScroll && onScroll(event), 0);
-        }
-        
-        if (finishTrigger || forbidTrigger) return;
-
-        const target = scrollableRef.current;
-
-        const atBottom = inverse
-            ? isElementAtTop(target, thresholdValue)
-            : isElementAtBottom(target, thresholdValue);
-
-        // 加载数据
-        if (atBottom && hasMore) {
-            setFinishTrigger(true);
-            setLoading(true);
-            next && next();
-        }
-
-        lastScrollTop = target.scrollTop;
-    };
-
     const hasChildren = !!(
         children &&
         children instanceof Array &&
@@ -343,6 +352,9 @@ const InfiniteScroll = (props) => {
                         </div>
                     </div>
                 )}
+                {inverse && (loading || (!loading && !hasChildren)) && hasMore && !isError && loader}
+                {inverse && isError && errorMsg}
+                {inverse && !hasMore && !isError && endMessage}
                 {children}
                 {(loading || (!loading && !hasChildren)) && hasMore && !isError && loader}
                 {isError && errorMsg}
