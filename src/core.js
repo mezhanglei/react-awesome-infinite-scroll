@@ -56,8 +56,6 @@ const InfiniteScroll = (props) => {
     const [showRelease, setShowRelease] = useState(false);
     const [loading, setLoading] = useState(false);
     const [isError, setIsError] = useState(false);
-    const [startY, setStartY] = useState(0);
-    const [preStartY, setPreStartY] = useState(0);
 
     const scrollContainerRef = useRef();
     const pullAreaRef = useRef();
@@ -67,6 +65,7 @@ const InfiniteScroll = (props) => {
     const loadNumRef = useRef(0);
     const finishTriggerRef = useRef();
     const forbidTriggerRef = useRef();
+    const preStartYRef = useRef(0);
     let lastScrollTop = 0;
     let dragging = false;
 
@@ -94,7 +93,7 @@ const InfiniteScroll = (props) => {
         if (target) {
             initDom(target);
             // 节点设置警告
-            if (target == scrollContainerRef.current && props.height) {
+            if (props.scrollableParent == scrollContainerRef.current && props.height) {
                 console.error(`"scrollableParent" and "height" only need one`);
             }
 
@@ -147,7 +146,7 @@ const InfiniteScroll = (props) => {
         const atBottom = inverse
             ? isElementAtTop(target, thresholdValue)
             : isElementAtBottom(target, thresholdValue);
-            
+
         // 加载数据
         if (atBottom && hasMore) {
             finishTriggerRef.current = true;
@@ -215,7 +214,7 @@ const InfiniteScroll = (props) => {
         evt.preventDefault();
         if (lastScrollTop > 10) return;
         dragging = true;
-        setPreStartY(getPositionInPage(evt).y);
+        preStartYRef.current = getPositionInPage(evt).y;
         const scrollContainerDom = scrollContainerRef.current;
         if (scrollContainerDom) {
             scrollContainerDom.style.willChange = 'transform';
@@ -226,9 +225,6 @@ const InfiniteScroll = (props) => {
     const onMove = (evt) => {
         evt.preventDefault();
         if (!dragging) return;
-
-        const startY = getPositionInPage(evt).y;
-        if (startY < preStartY) return;
         if (minPullDown > maxPullDown) {
             console.warn(`"minPullDown" is large than "maxPullDown", please set "maxPullDown" and "maxPullDown" should large than "minPullDown"`);
             return;
@@ -239,13 +235,19 @@ const InfiniteScroll = (props) => {
             return;
         }
 
-        const minHeight = minPullDown || (pullAreaHeight * 0.8);
+        const minHeight = minPullDown || (pullAreaHeight * 0.6);
         const maxHeight = maxPullDown || (pullAreaHeight);
-        if (startY - preStartY > (maxHeight)) return;
-        if (startY - preStartY >= minHeight) {
+
+        const startY = getPositionInPage(evt).y;
+        const deltaY = startY - preStartYRef.current;
+        // 最小判断边界
+        if (deltaY >= minHeight) {
             setShowRelease(true);
+        } else {
+            setShowRelease(false);
         }
-        setDrag(startY, preStartY);
+        // 执行偏移
+        Raf.setRaf(() => setDrag(Math.min(deltaY, maxHeight)));
     };
 
     const onEnd = () => {
@@ -256,8 +258,7 @@ const InfiniteScroll = (props) => {
         refreshFunction && refreshFunction();
         setShowRelease(false);
         Raf.setRaf(resetDrag);
-        setStartY(0);
-        setPreStartY(0);
+        preStartYRef.current = 0;
         dragging = false;
     };
 
@@ -271,12 +272,13 @@ const InfiniteScroll = (props) => {
         }
     };
 
-    const setDrag = (startY, preStartY) => {
+    const setDrag = (move) => {
         const scrollContainerDom = scrollContainerRef.current;
         if (scrollContainerDom) {
             scrollContainerDom.style.overflow = 'visible';
-            scrollContainerDom.style.transform = `translate3d(0px, ${startY - preStartY}px, 0px)`;
-            scrollContainerDom.style.paddingBottom = `${startY - preStartY}px`;
+            scrollContainerDom.style.transition = `transform 0.1s`;
+            scrollContainerDom.style.transform = `translate3d(0px, ${move}px, 0px)`;
+            scrollContainerDom.style.paddingBottom = `${move}px`;
         }
     };
 
