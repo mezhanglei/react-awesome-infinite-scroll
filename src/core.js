@@ -45,7 +45,6 @@ const InfiniteScroll = (props) => {
         onScroll,
         inverse,
         thresholdValue,
-        forbidTrigger,
         next,
         refreshFunction,
         minPullDown,
@@ -56,7 +55,6 @@ const InfiniteScroll = (props) => {
     const [pullAreaHeight, setPullAreaHeight] = useState(0);
     const [showRelease, setShowRelease] = useState(false);
     const [loading, setLoading] = useState(false);
-    const [finishTrigger, setFinishTrigger] = useState(false);
     const [isError, setIsError] = useState(false);
     const [startY, setStartY] = useState(0);
     const [preStartY, setPreStartY] = useState(0);
@@ -67,6 +65,8 @@ const InfiniteScroll = (props) => {
     const eventRef = useRef();
     const errorRef = useRef();
     const loadNumRef = useRef(0);
+    const finishTriggerRef = useRef();
+    const forbidTriggerRef = useRef();
     let lastScrollTop = 0;
     let dragging = false;
 
@@ -106,8 +106,8 @@ const InfiniteScroll = (props) => {
 
         // 加载下一个列表时重置状态
         if (React.Children.count(children)) {
-            if (loadNumRef.current > 1) {
-                setFinishTrigger(false);
+            if (loadNumRef.current > 0) {
+                finishTriggerRef.current = false;
                 setLoading(false);
                 errorRef.current = false;
                 setIsError(false);
@@ -128,31 +128,37 @@ const InfiniteScroll = (props) => {
         setIsError(props.isError);
     }, [props.isError]);
 
+    // 实时监听状态forbidTrigger
+    useEffect(() => {
+        forbidTriggerRef.current = props.forbidTrigger;
+    }, [props.forbidTrigger]);
+
+
+    // 滚动监听事件中无法获取到最新的state所以需要ref
     const onScrollListener = (event) => {
         if (typeof onScroll === 'function') {
             setTimeout(() => onScroll && onScroll(event), 0);
         }
 
-        if (finishTrigger || forbidTrigger || errorRef.current) return;
+        if (finishTriggerRef.current || forbidTriggerRef.current || errorRef.current) return;
 
         const target = scrollableRef.current;
         lastScrollTop = target.scrollTop;
         const atBottom = inverse
             ? isElementAtTop(target, thresholdValue)
             : isElementAtBottom(target, thresholdValue);
-
+            
         // 加载数据
         if (atBottom && hasMore) {
-            setFinishTrigger(true);
+            finishTriggerRef.current = true;
             setLoading(true);
             next && next();
         }
     };
 
-
     // 初始化绑定事件(滚动节点可能是异步也可能是同步)
     const initDom = (scrollableParent) => {
-        if (forbidTrigger) return;
+        if (forbidTriggerRef.current) return;
         // 滚动父节点绑定事件(文档根节点不能绑定事件)
         const el = scrollableParent === (document.body || document.documentElement) ? (document || window) : scrollableParent;
         eventRef.current = el;
@@ -206,6 +212,7 @@ const InfiniteScroll = (props) => {
     };
 
     const onStart = (evt) => {
+        evt.preventDefault();
         if (lastScrollTop > 10) return;
         dragging = true;
         setPreStartY(getPositionInPage(evt).y);
@@ -363,9 +370,9 @@ const InfiniteScroll = (props) => {
                 {inverse && isError && errorMsg}
                 {inverse && !hasMore && !isError && endMessage}
                 {children}
-                {(loading || (!loading && !hasChildren)) && hasMore && !isError && loader}
-                {isError && errorMsg}
-                {!hasMore && !isError && endMessage}
+                {!inverse && (loading || (!loading && !hasChildren)) && hasMore && !isError && loader}
+                {!inverse && isError && errorMsg}
+                {!inverse && !hasMore && !isError && endMessage}
             </div>
         </div>
     );
