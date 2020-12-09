@@ -2,7 +2,7 @@
 
 English | [中文说明](./README_CN.md)
 
-[![Version](https://img.shields.io/badge/version-2.0.4-green)](https://www.npmjs.com/package/react-awesome-infinite-scroll)
+[![Version](https://img.shields.io/badge/version-3.0.0-green)](https://www.npmjs.com/package/react-awesome-infinite-scroll)
 
 # Introduction?
 
@@ -10,10 +10,10 @@ Scroll load list, relying on the browser scroll to load, it's easy to loading li
 
 # featrues
 
-- [x] Support for manually setting the scrollableParent 'scrollableParent' and asynchronous parent, and automatically get the scrollparent by default
+- [x] Automatically gets the scroll parent by default,It is recommended to set `scrollableParent` manually
 - [x] Both internal and external scrolling of the component can be triggered，The scrolling behavior on the outside can be triggered by setting 'scrollableParent', and the scrolling on the inside can be triggered by setting 'height'
 - [x] Controls the boundary only by `hashMore`, so easy
-- [x] Custom component
+- [x] Support pull - up load, pull - down refresh and reverse pull - up refresh, pull - down load behavior(Chat box scene), custom component load dynamic display and behavior
 
 # Matters
 
@@ -92,16 +92,16 @@ reload = () => {
 
 ......
 
-<div className="parent" style={{height: "500px", overflow: "auto"}}> // 目前设置的外部滚动
+<div className="parent" style={{height: "500px", overflow: "auto"}}> // Currently set the outside scroll
     <InfiniteScroll
         next={this.fetchMoreData}
         scrollableParent={document.querySelector(".parent")} // or set "height", only one is need
         // height={500} // height
         hasMore={hasMore}
         isError={isError}
-        loader={<div style={{ textAlign: 'center' }}><h4>Loading...</h4></div>}
-        errorMsg={<div style={{ textAlign: "center" }}><span>加载失败？点击<a onClick={this.reload}>重新加载</a></span></div>}
-        endMessage={
+        loadingComponent={<div style={{ textAlign: 'center' }}><h4>Loading...</h4></div>}
+        errorComponent={<div style={{ textAlign: "center" }}><span>加载失败？点击<a onClick={this.reload}>重新加载</a></span></div>}
+        endComponent={
             (list?.length && !maxLength) ?
                 <div style={{ textAlign: 'center', fontWeight: 'normal', color: '#999' }}>
                     <span>NO MORE</span>
@@ -117,22 +117,55 @@ reload = () => {
 </div>
 ```
 
+### Instance methods
+
+scrollTo: function(x, y) {}
+  - `ScrollTo` allows you to operate the component to scrollTo the target position, with x as the horizontal scroll distance and y as the vertical scroll distance
+```javascript
+import InfiniteScroll from 'react-awesome-infinite-scroll';
+
+componentDidMount() {
+    // first loading
+    setTimeout(() => {
+        const res = Array.from({ length: 100 })
+        this.setState({
+            list: res,
+            hasMore: res?.length < this.state.total
+        }, () => {
+            // scrollTo
+            this.node.scrollTo(0, 100)
+        });
+    }, 100);
+}
+
+......
+
+<div className="parent" style={{height: "300px", overflow: "auto"}}>
+    <InfiniteScroll
+        ref={node => this.node => node}
+        ...
+      >
+          ...
+    </InfiniteScroll>
+</div>
+```
+
 ## Attributes
 
 | name                          | type                  | defaultValue                                                   | description                                                                                                      |
 | ----------------------------- | --------------------- | -------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
 | next                          | `function`            | -                                                              | Load the request function of the list                                                                                  |
 | hasMore                       | `boolean`             | `true`                                                         | Controls whether the list is loaded(`true` is required for initialization)                                                                               |
-| loader                        | `ReactNode`           | -                                                              | Display components at load time                                                  |
+| loadingComponent              | `ReactNode`           | -                                                              | Display components at load time                                                  |
 | height                        | `number`              | -                                                              | Set the fixed load height, or set scrollParent to scroll by `scrollableParent`                                                                              |
 | onScroll                      | `function`            | -                                                              | Scroll trigger function              |
 | pullDownToRefresh             | `boolean`             | `false`                                                        | Sets whether you can pull down to refresh                         |
 | pullDownToRefreshContent      | `ReactNode`           | -                                                              | Display components when pull-down                                                                                          |
 | releaseToRefreshContent       | `ReactNode`           | -                                                              | Release the pull-down refreshed display component                                                                                          |
 | refreshFunction               | `function`            | -                                                              | The request function to refresh the data                                                                                          |
-| endMessage                    | `ReactNode`           | -                                                              | Display components when the load list is complete                                                                                          |
+| endComponent                  | `ReactNode`           | -                                                              | Display components when the load list is complete                                                                                          |
 | isError                       | `boolean`             | -                                                              | loading error status                                                                                          |
-| errorMsg                      | `ReactNode`           | -                                                              | Display components when the load list is loading error                                                                                          |
+| errorComponent                | `ReactNode`           | -                                                              | Display components when the load list is loading error                                                                                          |
 | initialScrollY                | `number`              | -                                                              | Initializes the scroll distance                                                                                         |
 | scrollableParent              | `HtmlElement / string`| -                                                              | Set to scroll within the parent element，Auto bubble search if not set，Settings are recommended to improve performance                 |
 | minPullDown, maxPullDown      | `number`              | -                                                              | Control the minimum and maximum drop-down distances when pulling down                                                                                  |
@@ -140,6 +173,10 @@ reload = () => {
 | thresholdValue                | `string / number`     | -                                                              | Threshold, which controls how far to scroll to trigger loading                                                                                  |
 | forbidTrigger                 | `boolean`             | -                                                              | Disable scrolltrigger. When there are multiple scrolllists on the page with the same scrollparent, you can forbid scrolltrigger loading through this API                                                                                  |
 | containerStyle                | `object`     | -                                                                       | style of the container                                                                                  |
+| pullDownComponent             | `ReactNode`     | -                                                                    | Display components when pull down                                                                                 |
+| releaseComponent              | `ReactNode`     | -                                                                    | Display components when relase                                                                                  |
+| refreshingComponent           | `ReactNode`     | -                                                                    | Display components when refreshing                                                                                 |
+| refreshEndComponent           | `ReactNode`     | -                                                                    | Display components when refresh to complete                                                                                |
 
 # TODO-LIST
 - [ ] Controls the number of loaded lists and the cache

@@ -2,7 +2,7 @@
 
 [English](./README.md) | 中文说明
 
-[![Version](https://img.shields.io/badge/version-2.0.4-green)](https://www.npmjs.com/package/react-awesome-infinite-scroll)
+[![Version](https://img.shields.io/badge/version-3.0.0-green)](https://www.npmjs.com/package/react-awesome-infinite-scroll)
 
 # 适用场景
 
@@ -10,10 +10,10 @@
 
 # features
 
-- [x] 支持手动设置滚动父元素`scrollableParent`和异步父元素， 默认自动获取滚动父元素
+- [x] 默认自动获取滚动父元素,建议手动设置`scrollableParent`
 - [x] 支持外部滚动和内部滚动触发加载，外面的滚动行为可以通过设置`scrollableParent`触发，里面的滚动通过设置`height`触发内部滚动
 - [x] 只需要`hashMore`控制边界行为，简洁
-- [x] 自定义组件的一些行为
+- [x] 支持上拉加载,下拉刷新以及反向上拉刷新,下拉加载行为(聊天框场景),自定义组件的加载动态显示和行为
 
 # 注意事项
 
@@ -92,16 +92,16 @@ reload = () => {
 
 ......
 
-<div className="parent" style={{height: "500px", overflow: "auto"}}> // Currently set the outside scroll
+<div className="parent" style={{height: "500px", overflow: "auto"}}> // 目前设置的外部滚动
     <InfiniteScroll
         next={this.fetchMoreData}
         scrollableParent={document.querySelector(".parent")} // 和height二选一，选一种方式滚动
         // height={500} // height
         hasMore={hasMore}
         isError={isError}
-        loader={<div style={{ textAlign: 'center' }}><h4>Loading...</h4></div>}
-        errorMsg={<div style={{ textAlign: "center" }}><span>加载失败？点击<a onClick={this.reload}>重新加载</a></span></div>}
-        endMessage={
+        loadingComponent={<div style={{ textAlign: 'center' }}><h4>Loading...</h4></div>}
+        errorComponent={<div style={{ textAlign: "center" }}><span>加载失败？点击<a onClick={this.reload}>重新加载</a></span></div>}
+        endComponent={
             (list?.length && !maxLength) ?
                 <div style={{ textAlign: 'center', fontWeight: 'normal', color: '#999' }}>
                     <span>NO MORE</span>
@@ -117,28 +117,65 @@ reload = () => {
 </div>
 ```
 
-## 属性说明
+### 组件实例方法
+
+scrollTo: function(x, y) {}
+  - 通过`scrollTo`可以操作组件滚动到目标位置, x为横轴滚动距离,y为竖轴滚动距离
+```javascript
+import InfiniteScroll from 'react-awesome-infinite-scroll';
+
+componentDidMount() {
+    // first loading
+    setTimeout(() => {
+        const res = Array.from({ length: 100 })
+        this.setState({
+            list: res,
+            hasMore: res?.length < this.state.total
+        }, () => {
+            // scrollTo
+            this.node.scrollTo(0, 100)
+        });
+    }, 100);
+}
+
+......
+
+<div className="parent" style={{height: "300px", overflow: "auto"}}>
+    <InfiniteScroll
+        ref={node => this.node => node}
+        ...
+      >
+          ...
+    </InfiniteScroll>
+</div>
+```
+
+## 组件属性说明
 
 | 名称                          | 类型                  | 默认值                                                         | 描述                                                                                                      |
 | ----------------------------- | --------------------- | -------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
 | next                          | `function`            | -                                                              | 加载列表的请求函数                                                                                  |
 | hasMore                       | `boolean`             | `true`                                                         | 控制列表是否加载完成(初始化时需要手动赋值`true`)                                                                               |
-| loader                        | `ReactNode`           | -                                                              | 加载时的展示组件                                                  |
+| loadingComponent              | `ReactNode`           | -                                                              | 加载时的展示组件                                                  |
 | height                        | `number`              | -                                                              | 设置固定高度滚动加载,和`scrollableParent`二选一, `scrollableParent`用来设置滚动容器                                                                              |
 | onScroll                      | `function`            | -                                                              | 滚动触发函数              |
 | pullDownToRefresh             | `boolean`             | `false`                                                        | 设置是否可以下拉刷新                         |
 | pullDownToRefreshContent      | `ReactNode`           | -                                                              | 下拉时的展示组件                                                                                          |
 | releaseToRefreshContent       | `ReactNode`           | -                                                              | 释放下拉刷新的展示组件                                                                                          |
 | refreshFunction               | `function`            | -                                                              | 刷新数据的请求函数                                                                                          |
-| endMessage                    | `ReactNode`           | -                                                              | 加载列表完完成时的展示组件                                                                                          |
+| endComponent                  | `ReactNode`           | -                                                            | 加载列表完完成时的展示组件                                                                                          |
 | isError                       | `boolean`             | -                                                              | 是否加载错误                                                                                          |
-| errorMsg                      | `ReactNode`           | -                                                              | 加载列表错误时的展示组件                                                                                          |
+| errorComponent                | `ReactNode`           | -                                                              | 加载列表错误时的展示组件                                                                                          |
 | initialScrollY                | `number`              | -                                                              | 初始化滚动距离                                                                                         |
 | scrollableParent              | `HtmlElement / string` | -                                                             | 设置在该父元素内滚动,不设置默则会自动冒泡搜索滚动父元素，建议设置以提高性能                                                                            |
 | minPullDown, maxPullDown      | `number`              | -                                                              | 当下拉刷新时控制最小下拉和最大下拉距离                                                                                  |
 | inverse                       | `boolean`             | -                                                              | 设置反向加载                                                                                  |
 | forbidTrigger                 | `boolean`             | -                                                              | 禁止滚动加载触发，当页面上有多个滚动列表且滚动父元素相同，则可以通过此api禁止滚动触发加载                                                                                  |
 | containerStyle                | `object`     | -                                                                       | 组件内部的样式                                                                                  |
+| pullDownComponent             | `ReactNode`     | -                                                                    | 下拉时的显示组件                                                                                  |
+| releaseComponent              | `ReactNode`     | -                                                                    | 释放下拉时的显示组件                                                                                  |
+| refreshingComponent           | `ReactNode`     | -                                                                    | 刷新中的显示组件                                                                                  |
+| refreshEndComponent           | `ReactNode`     | -                                                                    | 刷新完毕的显示组件                                                                                  |
 
 # TODO-LIST
 - [ ] 控制加载的列表数量及记忆回溯

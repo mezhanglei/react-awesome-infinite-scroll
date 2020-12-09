@@ -7,17 +7,20 @@ import { isDom } from "./utils/type";
 
 /**
  * 滚动加载列表组件:
+ * 属性：
  * next: function 加载新数据时函数
  * hasMore: boolean 控制是否还进行加载
- * loader: ReactNode 加载时的展示组件
+ * loadingComponent: ReactNode 加载时的展示组件
  * isError: boolean 是否加载出错
- * errorMsg: ReactNode 加载出错时的展示组件
+ * errorComponent: ReactNode 加载出错时的展示组件
  * height: number 设置固定高度滚动
  * pullDownToRefresh: boolean 是否下拉刷新
- * pullDownToRefreshContent: ReactNode 下拉时的展示组件
- * releaseToRefreshContent: ReactNode 释放下拉时展示组件
+ * releaseComponent: ReactNode 释放下拉时的提示组件
+ * pullDownComponent: ReactNode 下拉时的提示组件
+ * refreshingComponent: ReactNode 刷新中的提示组件
+ * refreshEndComponent: ReactNode 刷新结束时的提示组件
  * refreshFunction: function 刷新列表的方法
- * endMessage: ReactNode 数据加载完了展示的组件
+ * endComponent: ReactNode 数据加载完了展示的组件
  * initialScrollY: number 列表初始化加载时滚动到的位置
  * scrollableParent: HtmlElement 不设置则默认自动搜索滚动父元素， 设置在该父元素内滚动，建议设置以节省性能，设置forbidTrigger可以阻止滚动触发
  * forbidTrigger: boolean 禁止滚动加载触发，当页面上有多个滚动列表且滚动父元素相同，则可以通过此api禁止滚动触发加载
@@ -26,21 +29,25 @@ import { isDom } from "./utils/type";
  * inverse: boolean 反向滚动加载
  * thresholdValue: string | number 阈值,用来控制滚动到什么程度(距离)触发加载
  * containerStyle: object 组件内部的style样式
+ * 实例方法：
+ * scrollTo：function(x, y) {} 如果有滚动节点则可以设置滚动到目标位置，x，y代表横轴和竖轴的滚动距离
  */
 
-const InfiniteScroll = (props) => {
+const InfiniteScroll = React.forwardRef((props, ref) => {
 
     const {
         height,
         containerStyle,
         children,
         pullDownToRefresh,
-        releaseToRefreshContent,
-        pullDownToRefreshContent,
-        endMessage,
-        loader,
+        releaseComponent,
+        pullDownComponent,
+        refreshingComponent,
+        refreshEndComponent,
+        endComponent,
+        loadingComponent,
         hasMore,
-        errorMsg,
+        errorComponent,
         className,
         onScroll,
         inverse,
@@ -53,9 +60,10 @@ const InfiniteScroll = (props) => {
     } = props;
 
     const [pullAreaHeight, setPullAreaHeight] = useState(0);
-    const [showRelease, setShowRelease] = useState(false);
+    const [refreshType, setRefreshType] = useState("pullDown");
     const [loading, setLoading] = useState(false);
     const [isError, setIsError] = useState(false);
+    const [prevScrollHeight, setPrevScrollHeight] = useState(0);
 
     const scrollContainerRef = useRef();
     const pullAreaRef = useRef();
@@ -66,8 +74,16 @@ const InfiniteScroll = (props) => {
     const finishTriggerRef = useRef();
     const forbidTriggerRef = useRef();
     const preStartYRef = useRef(0);
-    let lastScrollTop = 0;
-    let dragging = false;
+    let mouseDown = false;
+    let mouseDragging = false;
+
+    // ref转发实例方法
+    React.useImperativeHandle(ref, () => ({
+        scrollTo: (x, y) => {
+            getScrollableTarget().scrollTop = y || 0;
+            getScrollableTarget().scrollLeft = x || 0;
+        }
+    }));
 
     // 获取滚动的父节点
     const getScrollableTarget = () => {
@@ -93,7 +109,7 @@ const InfiniteScroll = (props) => {
         if (target) {
             initDom(target);
             // 节点设置警告
-            if (props.scrollableParent == scrollContainerRef.current && props.height) {
+            if (props.scrollableParent && props.height) {
                 console.error(`"scrollableParent" and "height" only need one`);
             }
 
@@ -106,6 +122,10 @@ const InfiniteScroll = (props) => {
         // 加载下一个列表时重置状态
         if (React.Children.count(children)) {
             if (loadNumRef.current > 0) {
+                // 反向加载的时候需要重置滚动高度
+                if (inverse && loading) {
+                    target.scrollTop = prevScrollHeight ? target.scrollHeight - prevScrollHeight : 0;
+                }
                 finishTriggerRef.current = false;
                 setLoading(false);
                 errorRef.current = false;
@@ -113,7 +133,7 @@ const InfiniteScroll = (props) => {
             }
             loadNumRef.current = loadNumRef.current + 1;
         }
-
+        setPrevScrollHeight(target.scrollHeight);
         return () => {
             removeEvent();
         };
@@ -142,7 +162,7 @@ const InfiniteScroll = (props) => {
         if (finishTriggerRef.current || forbidTriggerRef.current || errorRef.current) return;
 
         const target = scrollableRef.current;
-        lastScrollTop = target.scrollTop;
+
         const atBottom = inverse
             ? isElementAtTop(target, thresholdValue)
             : isElementAtBottom(target, thresholdValue);
@@ -212,8 +232,9 @@ const InfiniteScroll = (props) => {
 
     const onStart = (evt) => {
         evt.preventDefault();
-        if (lastScrollTop > 10) return;
-        dragging = true;
+        const condition = inverse ? !isElementAtBottom(scrollableRef.current, thresholdValue) : !isElementAtTop(scrollableRef.current, thresholdValue)
+        if (condition) return;
+        mouseDown = true;
         preStartYRef.current = getPositionInPage(evt).y;
         const scrollContainerDom = scrollContainerRef.current;
         if (scrollContainerDom) {
@@ -224,7 +245,7 @@ const InfiniteScroll = (props) => {
 
     const onMove = (evt) => {
         evt.preventDefault();
-        if (!dragging) return;
+        if (!mouseDown) return;
         if (minPullDown > maxPullDown) {
             console.warn(`"minPullDown" is large than "maxPullDown", please set "maxPullDown" and "maxPullDown" should large than "minPullDown"`);
             return;
@@ -242,24 +263,36 @@ const InfiniteScroll = (props) => {
         const deltaY = startY - preStartYRef.current;
         // 最小判断边界
         if (deltaY >= minHeight) {
-            setShowRelease(true);
+            setRefreshType("release");
         } else {
-            setShowRelease(false);
+            setRefreshType("pullDown");
         }
+
         // 执行偏移
-        Raf.setRaf(() => setDrag(Math.min(deltaY, maxHeight)));
+        if (inverse) {
+            Raf.setRaf(() => setDrag(Math.max(deltaY, -maxHeight)));
+        } else {
+            Raf.setRaf(() => setDrag(Math.min(deltaY, maxHeight)));
+        }
+        mouseDragging = true;
     };
 
-    const onEnd = () => {
+    const onEnd = (evt) => {
         if (typeof refreshFunction !== 'function') {
             throw new Error(`"refreshFunction" is not function or missing`);
         }
 
-        refreshFunction && refreshFunction();
-        setShowRelease(false);
-        Raf.setRaf(resetDrag);
-        preStartYRef.current = 0;
-        dragging = false;
+        mouseDown = false;
+        setRefreshType("refreshing")
+        setTimeout(() => {
+            if (mouseDragging) {
+                refreshFunction && refreshFunction();
+                mouseDragging = false;
+                setRefreshType("refreshEnd");
+                Raf.setRaf(resetDrag);
+                preStartYRef.current = 0;
+            }
+        }, 1000);
     };
 
     const resetDrag = () => {
@@ -268,17 +301,15 @@ const InfiniteScroll = (props) => {
             scrollContainerDom.style.overflow = 'auto';
             scrollContainerDom.style.transform = 'none';
             scrollContainerDom.style.willChange = 'none';
-            scrollContainerDom.style.paddingBottom = '0px';
         }
     };
 
     const setDrag = (move) => {
         const scrollContainerDom = scrollContainerRef.current;
         if (scrollContainerDom) {
-            scrollContainerDom.style.overflow = 'visible';
-            scrollContainerDom.style.transition = `transform 0.1s`;
+            scrollContainerDom.style.overflow = 'auto';
+            scrollContainerDom.style.transition = `transform 0.3s`;
             scrollContainerDom.style.transform = `translate3d(0px, ${move}px, 0px)`;
-            scrollContainerDom.style.paddingBottom = `${move}px`;
         }
     };
 
@@ -327,7 +358,7 @@ const InfiniteScroll = (props) => {
         children.length
     );
 
-    // 当设置了滚动固定高度, 下拉刷新时阻止元素溢出到外面显示
+    // 当设置了滚动固定高度, 下拉/上拉刷新时阻止元素溢出到外面显示
     const outerDivStyle = pullDownToRefresh && height
         ? { overflow: 'hidden' }
         : {};
@@ -337,9 +368,44 @@ const InfiniteScroll = (props) => {
         height: height || 'auto',
         overflow: props.height ? 'auto' : "hidden",
         WebkitOverflowScrolling: 'touch',
-        paddingBottom: "16px",
+        [inverse ? "marginBottom" : "marginTop"]: `${-1 * pullAreaHeight}px`,
         ...containerStyle,
     };
+
+    // 加载更多相关组件
+    const loadingMoreComponent = (
+        <>
+            {(loading || (!loading && !hasChildren)) && hasMore && !isError && loadingComponent}
+            {isError && errorComponent}
+            {!hasMore && !isError && endComponent}
+        </>
+    );
+
+    // 下拉刷新的相关组件
+    const refreshProps = {
+        "pullDown": pullDownComponent,
+        "release": releaseComponent,
+        "refreshing": refreshingComponent,
+        "refreshEnd": refreshEndComponent
+    }
+    const refreshComponent =
+        pullDownToRefresh && (
+            <div
+                style={{ position: 'relative', height: `${pullAreaHeight}px` }}
+                ref={pullAreaRef}
+            >
+                <div
+                    style={{
+                        position: 'absolute',
+                        left: 0,
+                        right: 0,
+                        top: 0
+                    }}
+                >
+                    {refreshProps[refreshType]}
+                </div>
+            </div>
+        )
 
     return (
         <div
@@ -351,33 +417,14 @@ const InfiniteScroll = (props) => {
                 ref={scrollContainerRef}
                 style={insideStyle}
             >
-                {pullDownToRefresh && (
-                    <div
-                        style={{ position: 'relative' }}
-                        ref={pullAreaRef}
-                    >
-                        <div
-                            style={{
-                                position: 'absolute',
-                                left: 0,
-                                right: 0,
-                                top: `${-1 * pullAreaHeight}px`,
-                            }}
-                        >
-                            {showRelease ? releaseToRefreshContent : pullDownToRefreshContent}
-                        </div>
-                    </div>
-                )}
-                {inverse && (loading || (!loading && !hasChildren)) && hasMore && !isError && loader}
-                {inverse && isError && errorMsg}
-                {inverse && !hasMore && !isError && endMessage}
+                {!inverse && refreshComponent}
+                {inverse && loadingMoreComponent}
                 {children}
-                {!inverse && (loading || (!loading && !hasChildren)) && hasMore && !isError && loader}
-                {!inverse && isError && errorMsg}
-                {!inverse && !hasMore && !isError && endMessage}
+                {!inverse && loadingMoreComponent}
+                {inverse && refreshComponent}
             </div>
         </div>
     );
-};
+});
 
 export default InfiniteScroll;
