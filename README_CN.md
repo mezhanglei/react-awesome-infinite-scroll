@@ -153,6 +153,7 @@ componentDidMount() {
 _getScrollRef: function() {}_
   - 获取滚动节点
 ```
+```
 
 ## 组件属性说明
 
