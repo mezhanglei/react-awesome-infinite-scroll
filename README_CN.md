@@ -119,7 +119,7 @@ reload = () => {
 
 ### 组件实例方法
 
-** scrollTo: function(x, y) {}**
+_scrollTo: function(x, y) {}_
   - 通过`scrollTo`可以操作组件滚动到目标位置, x为横轴滚动距离,y为竖轴滚动距离
 ```javascript
 import InfiniteScroll from 'react-awesome-infinite-scroll';
@@ -149,7 +149,8 @@ componentDidMount() {
     </InfiniteScroll>
 </div>
 
-**getScrollRef: function() {}**
+```
+_getScrollRef: function() {}_
   - 获取滚动节点
 ```
 

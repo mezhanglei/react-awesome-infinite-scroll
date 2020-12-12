@@ -119,7 +119,7 @@ reload = () => {
 
 ### Instance methods
 
-scrollTo: function(x, y) {}
+_scrollTo: function(x, y) {}_
   - `ScrollTo` allows you to operate the component to scrollTo the target position, with x as the horizontal scroll distance and y as the vertical scroll distance
 ```javascript
 import InfiniteScroll from 'react-awesome-infinite-scroll';
@@ -149,7 +149,7 @@ componentDidMount() {
     </InfiniteScroll>
 </div>
 ```
-getScrollRef: function() {}
+_getScrollRef: function() {}_
   - get scroll Node
 ```
 
