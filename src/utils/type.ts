@@ -1,4 +1,4 @@
-export function isDom(ele) {
+export function isDom(ele: any) {
     if (typeof HTMLElement === 'object') {
         return ele instanceof HTMLElement;
     } else {

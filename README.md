@@ -2,7 +2,7 @@
 
 English | [中文说明](./README_CN.md)
 
-[![Version](https://img.shields.io/badge/version-3.0.0-green)](https://www.npmjs.com/package/react-awesome-infinite-scroll)
+[![Version](https://img.shields.io/badge/version-3.1.0-green)](https://www.npmjs.com/package/react-awesome-infinite-scroll)
 
 # Introduction?
 
@@ -149,6 +149,9 @@ componentDidMount() {
     </InfiniteScroll>
 </div>
 ```
+getScrollRef: function() {}
+  - get scroll Node
+```
 
 ## Attributes
 
@@ -159,10 +162,6 @@ componentDidMount() {
 | loadingComponent              | `ReactNode`           | -                                                              | Display components at load time                                                  |
 | height                        | `number`              | -                                                              | Set the fixed load height, or set scrollParent to scroll by `scrollableParent`                                                                              |
 | onScroll                      | `function`            | -                                                              | Scroll trigger function              |
-| pullDownToRefresh             | `boolean`             | `false`                                                        | Sets whether you can pull down to refresh                         |
-| pullDownToRefreshContent      | `ReactNode`           | -                                                              | Display components when pull-down                                                                                          |
-| releaseToRefreshContent       | `ReactNode`           | -                                                              | Release the pull-down refreshed display component                                                                                          |
-| refreshFunction               | `function`            | -                                                              | The request function to refresh the data                                                                                          |
 | endComponent                  | `ReactNode`           | -                                                              | Display components when the load list is complete                                                                                          |
 | isError                       | `boolean`             | -                                                              | loading error status                                                                                          |
 | errorComponent                | `ReactNode`           | -                                                              | Display components when the load list is loading error                                                                                          |
@@ -173,6 +172,8 @@ componentDidMount() {
 | thresholdValue                | `string / number`     | -                                                              | Threshold, which controls how far to scroll to trigger loading                                                                                  |
 | forbidTrigger                 | `boolean`             | -                                                              | Disable scrolltrigger. When there are multiple scrolllists on the page with the same scrollparent, you can forbid scrolltrigger loading through this API                                                                                  |
 | containerStyle                | `object`     | -                                                                       | style of the container                                                                                  |
+| pullDownToRefresh             | `boolean`             | `false`                                                        | Sets whether you can pull down to refresh                         |
+| refreshFunction               | `function`            | -                                                              | The request function to refresh the data                                                                                          |
 | pullDownComponent             | `ReactNode`     | -                                                                    | Display components when pull down                                                                                 |
 | releaseComponent              | `ReactNode`     | -                                                                    | Display components when relase                                                                                  |
 | refreshingComponent           | `ReactNode`     | -                                                                    | Display components when refreshing                                                                                 |

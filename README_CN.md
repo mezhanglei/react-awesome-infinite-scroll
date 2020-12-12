@@ -2,7 +2,7 @@
 
 [English](./README.md) | 中文说明
 
-[![Version](https://img.shields.io/badge/version-3.0.0-green)](https://www.npmjs.com/package/react-awesome-infinite-scroll)
+[![Version](https://img.shields.io/badge/version-3.1.0-green)](https://www.npmjs.com/package/react-awesome-infinite-scroll)
 
 # 适用场景
 
@@ -119,7 +119,7 @@ reload = () => {
 
 ### 组件实例方法
 
-scrollTo: function(x, y) {}
+** scrollTo: function(x, y) {}**
   - 通过`scrollTo`可以操作组件滚动到目标位置, x为横轴滚动距离,y为竖轴滚动距离
 ```javascript
 import InfiniteScroll from 'react-awesome-infinite-scroll';
@@ -148,6 +148,9 @@ componentDidMount() {
           ...
     </InfiniteScroll>
 </div>
+
+**getScrollRef: function() {}**
+  - 获取滚动节点
 ```
 
 ## 组件属性说明
@@ -159,10 +162,6 @@ componentDidMount() {
 | loadingComponent              | `ReactNode`           | -                                                              | 加载时的展示组件                                                  |
 | height                        | `number`              | -                                                              | 设置固定高度滚动加载,和`scrollableParent`二选一, `scrollableParent`用来设置滚动容器                                                                              |
 | onScroll                      | `function`            | -                                                              | 滚动触发函数              |
-| pullDownToRefresh             | `boolean`             | `false`                                                        | 设置是否可以下拉刷新                         |
-| pullDownToRefreshContent      | `ReactNode`           | -                                                              | 下拉时的展示组件                                                                                          |
-| releaseToRefreshContent       | `ReactNode`           | -                                                              | 释放下拉刷新的展示组件                                                                                          |
-| refreshFunction               | `function`            | -                                                              | 刷新数据的请求函数                                                                                          |
 | endComponent                  | `ReactNode`           | -                                                            | 加载列表完完成时的展示组件                                                                                          |
 | isError                       | `boolean`             | -                                                              | 是否加载错误                                                                                          |
 | errorComponent                | `ReactNode`           | -                                                              | 加载列表错误时的展示组件                                                                                          |
@@ -172,6 +171,8 @@ componentDidMount() {
 | inverse                       | `boolean`             | -                                                              | 设置反向加载                                                                                  |
 | forbidTrigger                 | `boolean`             | -                                                              | 禁止滚动加载触发，当页面上有多个滚动列表且滚动父元素相同，则可以通过此api禁止滚动触发加载                                                                                  |
 | containerStyle                | `object`     | -                                                                       | 组件内部的样式                                                                                  |
+| pullDownToRefresh             | `boolean`             | `false`                                                        | 设置是否可以下拉刷新                         |
+| refreshFunction               | `function`            | -                                                              | 刷新数据的请求函数                                                                                          |
 | pullDownComponent             | `ReactNode`     | -                                                                    | 下拉时的显示组件                                                                                  |
 | releaseComponent              | `ReactNode`     | -                                                                    | 释放下拉时的显示组件                                                                                  |
 | refreshingComponent           | `ReactNode`     | -                                                                    | 刷新中的显示组件                                                                                  |

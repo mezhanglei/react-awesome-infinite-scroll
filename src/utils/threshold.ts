@@ -8,7 +8,7 @@ const defaultThreshold = {
     value: 0.8,
 };
 
-export function parseThreshold(scrollThreshold) {
+export function parseThreshold(scrollThreshold: string | number) {
     if (typeof scrollThreshold === 'number') {
         return {
             unit: ThresholdUnits.Percent,
