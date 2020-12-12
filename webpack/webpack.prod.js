@@ -10,7 +10,7 @@ const configs = require('./configs.js');
 
 //  === webpack配置内容 === //
 const webpackConfig = {
-    entry: path.resolve(configs.root, 'src/index.js'),
+    entry: path.resolve(configs.root, 'src/index'),
     context: configs.root,
     output: {
         filename: 'bundle.js',
