@@ -2,7 +2,7 @@
 
 [English](./README.md) | 中文说明
 
-[![Version](https://img.shields.io/badge/version-3.1.0-green)](https://www.npmjs.com/package/react-awesome-infinite-scroll)
+[![Version](https://img.shields.io/badge/version-3.2.0-green)](https://www.npmjs.com/package/react-awesome-infinite-scroll)
 
 # 适用场景
 
@@ -167,7 +167,6 @@ _getScrollRef: function() {}_
 | endComponent                  | `ReactNode`           | -                                                              | 加载列表完完成时的展示组件                                                                                          |
 | isError                       | `boolean`             | -                                                              | 是否加载错误                                                                                          |
 | errorComponent                | `ReactNode`           | -                                                              | 加载列表错误时的展示组件                                                                                          |
-| initialScrollY                | `number`              | -                                                              | 初始化滚动距离                                                                                         |
 | scrollableParent              | `HtmlElement / string` | -                                                             | 设置在该父元素内滚动,不设置默则会自动冒泡搜索滚动父元素，建议设置以提高性能                      |
 | minPullDown, maxPullDown      | `number`              | -                                                              | 当下拉刷新时控制最小下拉和最大下拉距离                                                                                  |
 | inverse                       | `boolean`             | -                                                              | 设置反向加载                                                                                  |
@@ -179,6 +178,8 @@ _getScrollRef: function() {}_
 | releaseComponent              | `ReactNode`           | -                                                              | 释放下拉时的显示组件                                                                                  |
 | refreshingComponent           | `ReactNode`           | -                                                              | 刷新中的显示组件                                                                                  |
 | refreshEndComponent           | `ReactNode`           | -                                                              | 刷新完毕的显示组件                                                                                  |
+| dataSource                    | `any[]`               | -                                                              | 如果设置了limit,则需要设置dataSource数据源                                                                                  |
+| limit                         | `number`              | -                                                              | 设置列表最多渲染多少条数据                                                                                  |
 
 # TODO-LIST
 - [ ] 控制加载的列表数量及记忆回溯

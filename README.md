@@ -2,7 +2,7 @@
 
 English | [中文说明](./README_CN.md)
 
-[![Version](https://img.shields.io/badge/version-3.1.0-green)](https://www.npmjs.com/package/react-awesome-infinite-scroll)
+[![Version](https://img.shields.io/badge/version-3.2.0-green)](https://www.npmjs.com/package/react-awesome-infinite-scroll)
 
 # Introduction?
 
@@ -166,7 +166,6 @@ _getScrollRef: function() {}_
 | endComponent                  | `ReactNode`           | -                                                              | Display components when the load list is complete                                                                                          |
 | isError                       | `boolean`             | -                                                              | loading error status                                                                                          |
 | errorComponent                | `ReactNode`           | -                                                              | Display components when the load list is loading error                                                                                          |
-| initialScrollY                | `number`              | -                                                              | Initializes the scroll distance                                                                                         |
 | scrollableParent              | `HtmlElement / string`| -                                                              | Set to scroll within the parent element，Auto bubble search if not set，Settings are recommended to improve performance                 |
 | minPullDown, maxPullDown      | `number`              | -                                                              | Control the minimum and maximum drop-down distances when pulling down                                                                                  |
 | inverse                       | `boolean`             | -                                                              | Set up reverse loading                                                                                  |
@@ -177,11 +176,10 @@ _getScrollRef: function() {}_
 | refreshFunction               | `function`            | -                                                              | The request function to refresh the data                                                                                          |
 | pullDownComponent             | `ReactNode`           | -                                                              | Display components when pull down                                                                                 |
 | releaseComponent              | `ReactNode`           | -                                                              | Display components when relase                                                                                  |
-| refreshingComponent           | `ReactNode`           | -                                                              | Display components when refreshing                                                                                 |
-| refreshEndComponent           | `ReactNode`           | -                                                              | Display components when refresh to complete                                                                                |
+| dataSource                    | `any[]`               | -                                                              | If the `limit` is set, you need to set the `dataSource`                                                                                  |
+| limit                         | `number`              | -                                                              | Sets the maximum number of pieces of data to be rendered in the list                                                                                  |
 
 # TODO-LIST
-- [ ] Controls the number of loaded lists and the cache
 - [ ] List of performance optimizations,  placeholders when not loaded
 
 

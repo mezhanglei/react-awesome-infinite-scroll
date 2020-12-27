@@ -81,6 +81,8 @@ class Home extends React.Component {
                 <div>外部容器滚动</div>
                 <div className="cart-index" style={{ height: "300px", overflow: "auto" }}>
                     <InfiniteScroll
+                        limit={120}
+                        dataSource={list}
                         next={this.fetchMoreData}
                         scrollableParent={document.querySelector(".cart-index")}
                         hasMore={hasMore}
