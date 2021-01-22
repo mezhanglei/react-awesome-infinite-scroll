@@ -4,38 +4,6 @@ import { ThresholdUnits, parseThreshold } from './utils/threshold';
 import Raf from "./utils/requestAnimationFrame";
 import { setScroll, getScroll, getClient, getPositionInPage, getScrollParent } from "./utils/dom";
 import { isDom } from "./utils/type";
-import CacheManager from "./cacheManager";
-
-/**
- * 滚动加载列表组件:
- * 属性：
- * next: function 加载新数据时函数
- * hasMore: boolean 控制是否还进行加载
- * loadingComponent: ReactNode 加载时的展示组件
- * isError: boolean 是否加载出错
- * errorComponent: ReactNode 加载出错时的展示组件
- * height: number 设置固定高度滚动
- * pullDownToRefresh: boolean 是否下拉刷新
- * releaseComponent: ReactNode 释放下拉时的提示组件
- * pullDownComponent: ReactNode 下拉时的提示组件
- * refreshingComponent: ReactNode 刷新中的提示组件
- * refreshEndComponent: ReactNode 刷新结束时的提示组件
- * refreshFunction: function 刷新列表的方法
- * endComponent: ReactNode 数据加载完了展示的组件
- * scrollableParent: HtmlElement 不设置则默认自动搜索滚动父元素， 设置在该父元素内滚动，建议设置以节省性能，设置forbidTrigger可以阻止滚动触发
- * forbidTrigger: boolean 禁止滚动加载触发，当页面上有多个滚动列表且滚动父元素相同，则可以通过此api禁止滚动触发加载
- * minPullDown, maxPullDown: 下拉刷新时, 设置最小下拉高度和最大下拉高度
- * onScroll: function (e) {} 滚动监听函数
- * inverse: boolean 反向滚动加载
- * thresholdValue: string | number 阈值,用来控制滚动到什么程度(距离)触发加载
- * containerStyle: object 组件内部的style样式
- * dataSource: any[] 传给组件用来控制缓存,如果设置了limit
- * limit: number 设置缓存的最多个数
- * 实例方法：
- * scrollTo：function(x, y) {} 如果有滚动节点则可以设置滚动到目标位置，x，y代表横轴和竖轴的滚动距离
- * getScrollRef：function() {} 返回滚动节点
- */
-
 
 interface Ilength {
     length: number
@@ -44,32 +12,38 @@ interface Ilength {
 type fn = () => any;
 type EventType = MouseEvent | TouchEvent;
 
+export enum COMPONENT_TYPE {
+    PULL = "pullDown",
+    RELEASE = "release",
+    REFRESHING = "refreshing",
+    END = "refreshEnd"
+}
+
 export interface Props {
-    height?: number,
-    containerStyle?: CSSProperties,
-    children: ReactNode,
-    pullDownToRefresh?: boolean,
-    releaseComponent?: ReactNode,
-    pullDownComponent?: ReactNode,
-    refreshingComponent?: ReactNode,
-    refreshEndComponent?: ReactNode,
-    endComponent?: ReactNode,
-    loadingComponent?: ReactNode,
-    hasMore?: boolean,
-    errorComponent?: ReactNode,
-    className?: string,
-    onScroll?: (e: EventType) => any;
-    inverse?: boolean,
-    thresholdValue?: number | string,
-    next: fn,
-    refreshFunction?: fn,
-    minPullDown?: number | undefined,
-    maxPullDown?: number | undefined,
-    scrollableParent: HTMLElement,
-    isError?: boolean,
-    forbidTrigger?: boolean,
-    dataSource?: any[],
-    limit?: number
+    height?: number, // 设置固定高度滚动
+    containerStyle?: CSSProperties, // 组件内部的style样式
+    renderItem: (item: any, index: number) => any; // 渲染item
+    pullDownToRefresh?: boolean, // 是否下拉刷新
+    releaseComponent?: ReactNode, // 释放下拉时的提示组件
+    pullDownComponent?: ReactNode, // 下拉时的提示组件
+    refreshingComponent?: ReactNode, // 刷新中的提示组件
+    refreshEndComponent?: ReactNode, // 刷新结束时的提示组件
+    endComponent?: ReactNode, // 数据加载完了展示的组件
+    loadingComponent?: ReactNode, // 加载时的展示组件
+    hasMore?: boolean, // 控制是否还进行加载
+    errorComponent?: ReactNode, // 加载出错时的展示组件
+    className?: string, // 
+    onScroll?: (e: EventType) => any; // 滚动监听函数
+    inverse?: boolean, // 反向滚动加载
+    thresholdValue?: number | string, // 阈值,用来控制滚动到什么程度(距离)触发加载
+    next: fn, // 加载新数据时函数
+    refreshFunction?: fn, // 刷新列表的方法
+    minPullDown?: number | undefined, // 下拉刷新时, 最小下拉高度
+    maxPullDown?: number | undefined, // 下拉刷新时, 最大下拉高度
+    scrollableParent: HTMLElement, // 不设置则默认自动搜索滚动父元素， 设置在该父元素内滚动，建议设置以节省性能，设置forbidTrigger可以阻止滚动触发
+    isError?: boolean, // 是否加载出错
+    forbidTrigger?: boolean, // 禁止滚动加载触发，当页面上有多个滚动列表且滚动父元素相同，则可以通过此api禁止滚动触发加载
+    dataSource: any[], // 数据源
 }
 
 export interface ScrollRef {
@@ -77,12 +51,13 @@ export interface ScrollRef {
     getScrollRef: () => HTMLElement;
 }
 
+// 滚动加载列表组件
 const InfiniteScroll: React.FC<Props> = React.forwardRef((props: Props, ref) => {
 
     const {
         height,
         containerStyle,
-        children,
+        renderItem,
         pullDownToRefresh,
         releaseComponent,
         pullDownComponent,
@@ -100,12 +75,11 @@ const InfiniteScroll: React.FC<Props> = React.forwardRef((props: Props, ref) => 
         refreshFunction,
         minPullDown = 0,
         maxPullDown = 0,
-        limit,
-        dataSource
+        dataSource = []
     } = props;
 
     const [pullAreaHeight, setPullAreaHeight] = useState<number>(0);
-    const [refreshType, setRefreshType] = useState<string>("pullDown");
+    const [refreshType, setRefreshType] = useState<string>(COMPONENT_TYPE.PULL);
     const [loading, setLoading] = useState<boolean>(false);
     const [isError, setIsError] = useState<boolean | undefined>(false);
     const [prevScrollHeight, setPrevScrollHeight] = useState<number>(0);
@@ -147,69 +121,59 @@ const InfiniteScroll: React.FC<Props> = React.forwardRef((props: Props, ref) => 
         }
     };
 
-    const managerRef = useRef<any>();
-    useEffect(() => {
-        managerRef.current = new CacheManager({ limit });
-    }, [])
-
     // 当列表加载完成时, 再监听事件并重置一些状态
     useEffect(() => {
         // 绑定事件
         const target = getScrollableTarget();
         scrollableRef.current = target;
+        console.log()
         if (target) {
             initDom(target);
             // 节点设置警告
             if (props.scrollableParent && props.height) {
                 console.error(`"scrollableParent" and "height" only need one`);
             }
-
-            if(limit && !dataSource) {
-                console.error(`you should set the "dataSource"`);
-            }
         }
-
-        // 缓存控制更新索引
-        managerRef.current && managerRef.current.updateIndex(dataSource);
 
         // 加载下一个列表时重置状态
-        if (React.Children.count(children)) {
+        if (dataSource?.length) {
             if (loadNumRef.current > 0) {
-                // 反向加载的时候需要重置滚动高度
-                if (inverse && loading && isElementAtTop(target, thresholdValue)) {
-                    setScroll(target, 0, (prevScrollHeight && target.scrollHeight - prevScrollHeight) ? target.scrollHeight - prevScrollHeight : 50);
-                }
-
-                // 如果正向加载, 由于设置了limit使得children的总高度不会变,所以会导致滚动不会重置
-                if (!inverse && limit) {
-                    const scrollTop = getScroll(target).y;
-                    setScroll(target, 0, scrollTop - 50);
-                }
-
-                finishTriggerRef.current = false;
-
-                setLoading(false);
-                errorRef.current = false;
-                setIsError(false);
+                resetStatus(target);
             }
+
             loadNumRef.current = loadNumRef.current + 1;
-
-            if (React.Children.count(children) <= 1) {
-                console.error(`"props.children" cannot only one ReactNode, please check,Check to see if it is wrapped by an element!`);
-            }
         }
+
+        // 更新高度
         setPrevScrollHeight(target.scrollHeight);
         return () => {
             removeEvent();
         };
-    }, [children]);
+    }, [dataSource]);
+
+    // 加载到新数据后重置状态
+    const resetStatus = (target: any) => {
+        // 反向加载的时候需要重置滚动高度
+        if (inverse && loading && isElementAtTop(target, thresholdValue)) {
+            setScroll(target, 0, (prevScrollHeight && target.scrollHeight - prevScrollHeight) ? target.scrollHeight - prevScrollHeight : 50);
+        }
+        // 结束触发
+        finishTriggerRef.current = false;
+        // 结束loading
+        setLoading(false);
+        // 结束error状态
+        errorChange(false);
+    }
+
+    // error状态change
+    const errorChange = (value: boolean = false) => {
+        errorRef.current = value;
+        setIsError(value);
+    }
 
     // 实时监听状态isError
     useEffect(() => {
-        // 实时监听
-        errorRef.current = props.isError;
-        // 更新视图
-        setIsError(props.isError);
+        errorChange(props.isError);
     }, [props.isError]);
 
     // 实时监听状态forbidTrigger
@@ -222,7 +186,7 @@ const InfiniteScroll: React.FC<Props> = React.forwardRef((props: Props, ref) => 
         if (typeof onScroll === 'function') {
             setTimeout(() => onScroll && onScroll(event), 0);
         }
-
+       
         if (finishTriggerRef.current || forbidTriggerRef.current || errorRef.current) return;
 
         const target = scrollableRef.current;
@@ -320,9 +284,9 @@ const InfiniteScroll: React.FC<Props> = React.forwardRef((props: Props, ref) => 
 
         // 最小判断边界
         if (Math.abs(deltaY) >= minHeight) {
-            setRefreshType("release");
+            setRefreshType(COMPONENT_TYPE.RELEASE);
         } else {
-            setRefreshType("pullDown");
+            setRefreshType(COMPONENT_TYPE.PULL);
         }
 
         // 执行偏移
@@ -342,12 +306,12 @@ const InfiniteScroll: React.FC<Props> = React.forwardRef((props: Props, ref) => 
         }
 
         mouseDown = false;
-        setRefreshType("refreshing");
+        setRefreshType(COMPONENT_TYPE.REFRESHING);
         setTimeout(() => {
             if (mouseDragging) {
                 refreshFunction && refreshFunction();
                 mouseDragging = false;
-                setRefreshType("refreshEnd");
+                setRefreshType(COMPONENT_TYPE.END);
                 Raf.setRaf(resetDrag);
                 preStartYRef.current = 0;
                 setPullDistance(0);
@@ -407,9 +371,9 @@ const InfiniteScroll: React.FC<Props> = React.forwardRef((props: Props, ref) => 
     };
 
     const hasChildren = !!(
-        children &&
-        children instanceof Array &&
-        children.length
+        dataSource &&
+        dataSource instanceof Array &&
+        dataSource.length
     );
 
     // 当设置了滚动固定高度, 下拉/上拉刷新时阻止元素溢出到外面显示
@@ -436,10 +400,10 @@ const InfiniteScroll: React.FC<Props> = React.forwardRef((props: Props, ref) => 
 
     // 下拉刷新的相关组件
     const refreshProps: any = {
-        "pullDown": pullDownComponent,
-        "release": releaseComponent,
-        "refreshing": refreshingComponent,
-        "refreshEnd": refreshEndComponent
+        [COMPONENT_TYPE.PULL]: pullDownComponent,
+        [COMPONENT_TYPE.RELEASE]: releaseComponent,
+        [COMPONENT_TYPE.REFRESHING]: refreshingComponent,
+        [COMPONENT_TYPE.END]: refreshEndComponent
     };
     const refreshComponent =
         pullDownToRefresh && (
@@ -452,7 +416,11 @@ const InfiniteScroll: React.FC<Props> = React.forwardRef((props: Props, ref) => 
                 </span>
             </div>
         );
-    const indexArr = managerRef.current && managerRef.current.getIndex();
+
+    const renderChildren = (dataSource: any[] = []): any[] => {
+        return dataSource?.map((item: any, index: number) => (renderItem(item, index)))
+    }
+
     return (
         <div
             style={outerDivStyle}
@@ -465,7 +433,7 @@ const InfiniteScroll: React.FC<Props> = React.forwardRef((props: Props, ref) => 
             >
                 {!inverse && refreshComponent}
                 {inverse && loadingMoreComponent}
-                {(children as any).slice(indexArr?.startIndex, indexArr?.endIndex)}
+                {renderChildren(dataSource)}
                 {!inverse && loadingMoreComponent}
                 {inverse && refreshComponent}
             </div>

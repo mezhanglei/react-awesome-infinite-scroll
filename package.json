@@ -1,6 +1,6 @@
 {
   "name": "react-awesome-infinite-scroll",
-  "version": "3.2.0",
+  "version": "4.0.0",
   "description": "简单好用的滚动列表加载组件",
   "main": "lib/bundle.js",
   "repository": "https://github.com/mezhanglei",
@@ -20,7 +20,8 @@
   },
   "keywords": [
     "react-awesome-infinite-scroll",
-    "infinite-scroll-list",
+    "react-infinite",
+    "react-infinite-scroll",
     "infinite-scroll",
     "infinite-list",
     "scroll-list"

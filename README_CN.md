@@ -2,7 +2,7 @@
 
 [English](./README.md) | 中文说明
 
-[![Version](https://img.shields.io/badge/version-3.2.0-green)](https://www.npmjs.com/package/react-awesome-infinite-scroll)
+[![Version](https://img.shields.io/badge/version-4.0.0-green)](https://www.npmjs.com/package/react-awesome-infinite-scroll)
 
 # 适用场景
 
@@ -90,11 +90,21 @@ reload = () => {
     });
 }
 
+renderItem = (_, index) => {
+    return (
+        <div style={{ height: 30, border: '1px solid green', margin: 6, padding: 8 }} key={index} >
+            div - #{index}{_}
+        </div>
+    );
+}
+
 ......
 
 <div className="parent" style={{height: "500px", overflow: "auto"}}> // 目前设置的外部滚动
     <InfiniteScroll
+        dataSource={list}
         next={this.fetchMoreData}
+        renderItem={this.renderItem}
         scrollableParent={document.querySelector(".parent")} // 和height二选一，选一种方式滚动
         // height={500} // height
         hasMore={hasMore}
@@ -107,13 +117,7 @@ reload = () => {
                     <span>NO MORE</span>
                 </div> : null
         }
-      >
-          {list.map((_, index) => (
-              <div style={{ height: 30, border: '1px solid green', margin: 6, padding: 8 }} key={index} >
-                  div - #{index}
-              </div>
-          ))}
-    </InfiniteScroll>
+    />
 </div>
 ```
 
@@ -144,9 +148,7 @@ componentDidMount() {
     <InfiniteScroll
         ref={node => this.node => node}
         ...
-      >
-          ...
-    </InfiniteScroll>
+      />
 </div>
 
 ```
@@ -178,11 +180,10 @@ _getScrollRef: function() {}_
 | releaseComponent              | `ReactNode`           | -                                                              | 释放下拉时的显示组件                                                                                  |
 | refreshingComponent           | `ReactNode`           | -                                                              | 刷新中的显示组件                                                                                  |
 | refreshEndComponent           | `ReactNode`           | -                                                              | 刷新完毕的显示组件                                                                                  |
-| dataSource                    | `any[]`               | -                                                              | 如果设置了limit,则需要设置dataSource数据源                                                                                  |
-| limit                         | `number`              | -                                                              | 设置列表最多渲染多少条数据                                                                                  |
+| dataSource                    | `any[]`               | -                                                              | dataSource数据源                                                                                  |
+| renderItem                    | `ReactNode`           | -                                                              | `renderItem` 列表渲染的模板                                                                                  |
 
 # TODO-LIST
-- [ ] 控制加载的列表数量及记忆回溯
 - [ ] 列表的性能优化, 未加载内容占位
 
 

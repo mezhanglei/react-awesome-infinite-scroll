@@ -2,7 +2,7 @@
 
 English | [中文说明](./README_CN.md)
 
-[![Version](https://img.shields.io/badge/version-3.2.0-green)](https://www.npmjs.com/package/react-awesome-infinite-scroll)
+[![Version](https://img.shields.io/badge/version-4.0.0-green)](https://www.npmjs.com/package/react-awesome-infinite-scroll)
 
 # Introduction?
 
@@ -90,11 +90,21 @@ reload = () => {
     });
 }
 
+renderItem = (_, index) => {
+    return (
+        <div style={{ height: 30, border: '1px solid green', margin: 6, padding: 8 }} key={index} >
+            div - #{index}{_}
+        </div>
+    );
+}
+
 ......
 
 <div className="parent" style={{height: "500px", overflow: "auto"}}> // Currently set the outside scroll
     <InfiniteScroll
+        dataSource={list}
         next={this.fetchMoreData}
+        renderItem={this.renderItem}
         scrollableParent={document.querySelector(".parent")} // or set "height", only one is need
         // height={500} // height
         hasMore={hasMore}
@@ -107,13 +117,7 @@ reload = () => {
                     <span>NO MORE</span>
                 </div> : null
         }
-      >
-          {list.map((_, index) => (
-              <div style={{ height: 30, border: '1px solid green', margin: 6, padding: 8 }} key={index} >
-                  div - #{index}
-              </div>
-          ))}
-    </InfiniteScroll>
+      />
 </div>
 ```
 
@@ -144,9 +148,7 @@ componentDidMount() {
     <InfiniteScroll
         ref={node => this.node => node}
         ...
-      >
-          ...
-    </InfiniteScroll>
+      />
 </div>
 ```
 _getScrollRef: function() {}_
@@ -176,8 +178,8 @@ _getScrollRef: function() {}_
 | refreshFunction               | `function`            | -                                                              | The request function to refresh the data                                                                                          |
 | pullDownComponent             | `ReactNode`           | -                                                              | Display components when pull down                                                                                 |
 | releaseComponent              | `ReactNode`           | -                                                              | Display components when relase                                                                                  |
-| dataSource                    | `any[]`               | -                                                              | If the `limit` is set, you need to set the `dataSource`                                                                                  |
-| limit                         | `number`              | -                                                              | Sets the maximum number of pieces of data to be rendered in the list                                                                                  |
+| dataSource                    | `any[]`               | -                                                              | `dataSource` is the dataSource of list                                                                                  |
+| renderItem                    | `ReactNode`           | -                                                              | `renderItem` is the template of list                                                                                  |
 
 # TODO-LIST
 - [ ] List of performance optimizations,  placeholders when not loaded

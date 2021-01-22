@@ -74,6 +74,14 @@ class Home extends React.Component {
         })
     }
 
+    renderItem = (_, index) => {
+        return (
+            <div style={{ height: 30, border: '1px solid green', margin: 6, padding: 8 }} key={index} >
+                div - #{index}{_}
+            </div>
+        );
+    }
+
     render() {
         const { hasMore, isError, list = [], maxLength } = this.state;
         return (
@@ -81,9 +89,9 @@ class Home extends React.Component {
                 <div>外部容器滚动</div>
                 <div className="cart-index" style={{ height: "300px", overflow: "auto" }}>
                     <InfiniteScroll
-                        limit={120}
                         dataSource={list}
                         next={this.fetchMoreData}
+                        renderItem={this.renderItem}
                         scrollableParent={document.querySelector(".cart-index")}
                         hasMore={hasMore}
                         isError={isError}
@@ -101,18 +109,14 @@ class Home extends React.Component {
                                     <span>没有更多内容了</span>
                                 </div> : null
                         }
-                    >
-                        {list.map((_, index) => (
-                            <div style={{ height: 30, border: '1px solid green', margin: 6, padding: 8 }} key={index} >
-                                div - #{index}
-                            </div>
-                        ))}
-                    </InfiniteScroll>
+                    />
                 </div>
                 <div>内部固定高度滚动</div>
                 <div>
                     <InfiniteScroll
+                        dataSource={list}
                         next={this.fetchMoreData}
+                        renderItem={this.renderItem}
                         hasMore={hasMore}
                         isError={isError}
                         pullDownToRefresh
@@ -130,19 +134,15 @@ class Home extends React.Component {
                                     <span>没有更多内容了</span>
                                 </div> : null
                         }
-                    >
-                        {list.map((_, index) => (
-                            <div style={{ height: 30, border: '1px solid green', margin: 6, padding: 8 }} key={index} >
-                                div - #{index}
-                            </div>
-                        ))}
-                    </InfiniteScroll>
+                    />
                 </div>
                 <div>反向上拉刷新, 下拉加载(一般用于聊天框)</div>
                 <div>
                     <InfiniteScroll
+                        dataSource={list}
                         inverse
                         next={this.fetchMoreData}
+                        renderItem={this.renderItem}
                         hasMore={hasMore}
                         isError={isError}
                         pullDownToRefresh
@@ -160,13 +160,7 @@ class Home extends React.Component {
                                     <span>没有更多内容了</span>
                                 </div> : null
                         }
-                    >
-                        {list.map((_, index) => (
-                            <div style={{ height: 30, border: '1px solid green', margin: 6, padding: 8 }} key={index} >
-                                div - #{index}
-                            </div>
-                        ))}
-                    </InfiniteScroll>
+                    />
                 </div>
             </>
         );
