@@ -39,8 +39,8 @@ const globalDefine = {
 const devConfig = {
     useEslint: false,
     useStylelint: true,
-    eslintPath: path.join(root, "./.stylelintrc.js"),
-    stylelintPath: path.join(root, "./.stylelintrc.js"),
+    eslintPath: path.join(root, "./.stylelintrc.{js,ts}"),
+    stylelintPath: path.join(root, "./.stylelintrc.{js,ts}"),
     checkStyleRoot: examplePath,
     checkStylePath: ["src/**/*.{css,sass,scss,less}"],
     indexHtml: 'index.html',
@@ -50,7 +50,7 @@ const devConfig = {
 const prodConfig = {
     isAnalyz: false,
     treeShakingCssPath: globAll.sync([
-        path.join(root, "src/**/*.js"),
+        path.join(root, "src/**/*.{js,ts}"),
         path.join(root, "src/**/*.less")
     ]),
     staticOutPath: path.join(devOutputPath, 'static')

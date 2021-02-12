@@ -1,6 +1,6 @@
 {
   "name": "react-awesome-infinite-scroll",
-  "version": "4.0.0",
+  "version": "4.0.1",
   "description": "简单好用的滚动列表加载组件",
   "main": "lib/bundle.js",
   "repository": "https://github.com/mezhanglei",
@@ -88,6 +88,9 @@
     "webpack-node-externals": "^2.5.2"
   },
   "dependencies": {
+    "@types/classnames": "^2.2.11",
+    "@types/history": "^4.7.8",
+    "@types/react-router-dom": "^5.1.7",
     "antd": "^4.4.2",
     "classnames": "^2.2.6",
     "immutable": "^4.0.0-rc.12",

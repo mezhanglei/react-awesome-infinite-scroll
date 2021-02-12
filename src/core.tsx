@@ -40,7 +40,7 @@ export interface Props {
     refreshFunction?: fn, // 刷新列表的方法
     minPullDown?: number | undefined, // 下拉刷新时, 最小下拉高度
     maxPullDown?: number | undefined, // 下拉刷新时, 最大下拉高度
-    scrollableParent: HTMLElement, // 不设置则默认自动搜索滚动父元素， 设置在该父元素内滚动，建议设置以节省性能，设置forbidTrigger可以阻止滚动触发
+    scrollableParent?: HTMLElement | Element | null, // 不设置则默认自动搜索滚动父元素， 设置在该父元素内滚动，建议设置以节省性能，设置forbidTrigger可以阻止滚动触发
     isError?: boolean, // 是否加载出错
     forbidTrigger?: boolean, // 禁止滚动加载触发，当页面上有多个滚动列表且滚动父元素相同，则可以通过此api禁止滚动触发加载
     dataSource: any[], // 数据源

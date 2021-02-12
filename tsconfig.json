@@ -46,7 +46,7 @@
     "baseUrl": "./",                          /* 相对路径的基础路径 */
     "paths": {
       "@/*": [
-          "src/*"
+          "example/*"
       ]
     },                                        /* 相对于baseUrl导入文件路径的别名设置 */
     // "rootDirs": [],                        /* List of root folders whose combined content represents the structure of the project at runtime. */

@@ -1,6 +1,6 @@
 import loadable from "@/components/lazy";
 
-export const Home = loadable({ loader: () => import(/* webpackChunkName: "home" */ '@/pages/home/index.js') });
+export const Home = loadable({ loader: () => import(/* webpackChunkName: "home" */ '@/pages/home/index') });
 
 export const HomeRoutes = [
     {

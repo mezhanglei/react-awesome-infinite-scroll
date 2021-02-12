@@ -48,7 +48,7 @@ function getNetworkIp() {
 
 module.exports = {
     entry: {
-        index: path.join(configs.examplePath, 'pages/index.js')
+        index: path.join(configs.examplePath, 'pages/index')
     },
     context: configs.root,
     output: {
