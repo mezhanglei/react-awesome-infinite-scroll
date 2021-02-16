@@ -1,26 +1,47 @@
 import { isDom } from "./type";
 
-// 获取元素或事件对象的相对于页面的真实位置 = 滚动高度 + 可视位置
-export function getPositionInPage(el: MouseEvent | TouchEvent | HTMLElement): any {
-
-    let pos = {};
-    if (el instanceof MouseEvent) {
+// 返回元素或事件对象的可视位置
+export interface SizeInterface {
+    x: number;
+    y: number;
+}
+export function getClientXY(el: MouseEvent | TouchEvent | HTMLElement): null | SizeInterface {
+    let pos = null;
+    if ("clientX" in el) {
         pos = {
-            x: el.clientX + getScroll().x,
-            y: el.clientY + getScroll().y
+            x: el.clientX,
+            y: el.clientY
         };
-    } else if (el instanceof TouchEvent) {
-        pos = {
-            x: el.touches[0].clientX + getScroll().x,
-            y: el.touches[0].clientY + getScroll().y
-        };
+    } else if ("touches" in el) {
+        if (el?.touches[0]) {
+            pos = {
+                x: el.touches[0]?.clientX,
+                y: el.touches[0]?.clientY
+            };
+        }
     } else if (isDom(el)) {
         pos = {
-            x: el.getBoundingClientRect().left + getScroll().x,
-            y: el.getBoundingClientRect().top + getScroll().y
+            x: el.getBoundingClientRect().left,
+            y: el.getBoundingClientRect().top
         };
     }
+    return pos;
+}
 
+/**
+ * 获取元素或事件对象的相对于页面的真实位置 = 滚动高度 + 可视位置
+ * @param el 元素或事件对象
+ */
+export function getPositionInPage(el: MouseEvent | TouchEvent | HTMLElement): null | SizeInterface {
+    const clientXY = getClientXY(el);
+    const scroll = getScroll();
+    let pos = null;
+    if (clientXY) {
+        pos = {
+            x: clientXY.x + (scroll?.x || 0),
+            y: clientXY.y + (scroll?.y || 0)
+        }
+    }
     return pos;
 };
 
