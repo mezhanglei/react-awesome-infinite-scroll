@@ -58,18 +58,22 @@ export function getScroll(el: HTMLElement = (document.body || document.documentE
 };
 
 // 获取页面或元素的可视宽高(兼容写法, 不包括工具栏和滚动条)
-export function getClient(el: HTMLElement = (document.body || document.documentElement)): any {
+export interface ClientInterface {
+    width: number;
+    height: number;
+}
+export function getClientWH(el: HTMLElement = (document.body || document.documentElement)): undefined | ClientInterface {
     if (!isDom(el)) {
         return;
     }
     if (el === document.body || el === document.documentElement) {
-        const x = el.clientWidth || window.screen.availWidth;
-        const y = el.clientHeight || window.screen.availHeight;
-        return { x, y };
+        const width = el.clientWidth || window.screen.availWidth;
+        const height = el.clientHeight || window.screen.availHeight;
+        return { width, height };
     } else {
-        const x = el.clientWidth;
-        const y = el.clientHeight;
-        return { x, y };
+        const width = el.clientWidth;
+        const height = el.clientHeight;
+        return { width, height };
     }
 };
 
