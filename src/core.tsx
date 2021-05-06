@@ -2,12 +2,8 @@ import React, { useEffect, useState, useRef, ReactNode, CSSProperties } from 're
 import { throttle } from './utils/common';
 import { ThresholdUnits, parseThreshold } from './utils/threshold';
 import Raf from "./utils/requestAnimationFrame";
-import { setScroll, getScroll, getClientWH, getPositionInPage, getScrollParent } from "./utils/dom";
+import { setScroll, getScroll, getOffsetWH, getPositionInPage, getScrollParent } from "./utils/dom";
 import { isDom } from "./utils/type";
-
-interface Ilength {
-    length: number
-}
 
 type fn = () => any;
 type EventType = MouseEvent | TouchEvent;
@@ -40,7 +36,7 @@ export interface Props {
     refreshFunction?: fn; // 刷新列表的方法
     minPullDown?: number | undefined; // 下拉刷新时, 最小下拉高度
     maxPullDown?: number | undefined; // 下拉刷新时, 最大下拉高度
-    scrollableParent: HTMLElement | Element | null; // 不设置则默认自动搜索滚动父元素， 设置在该父元素内滚动，建议设置以节省性能，设置forbidTrigger可以阻止滚动触发
+    scrollableParent?: HTMLElement | Element | null; // 不设置则默认自动搜索滚动父元素， 设置在该父元素内滚动，建议设置以节省性能，设置forbidTrigger可以阻止滚动触发
     isError?: boolean; // 是否加载出错
     forbidTrigger?: boolean; // 禁止滚动加载触发，当页面上有多个滚动列表且滚动父元素相同，则可以通过此api禁止滚动触发加载
     dataSource: any[]; // 数据源
@@ -357,7 +353,7 @@ const InfiniteScroll = React.forwardRef<ScrollRef, Props>((props, ref) => {
 
     // 是否在底部
     const isElementAtBottom = (target: HTMLElement, thresholdValue: number | string = 0.8) => {
-        const clientHeight = getClientWH(target)?.height || 0;
+        const clientHeight = getOffsetWH(target)?.height || 0;
         const scrollTop = getScroll(target)?.y || 0;
         const threshold = parseThreshold(thresholdValue);
 

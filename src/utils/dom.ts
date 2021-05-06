@@ -78,22 +78,22 @@ export function getScroll(el: HTMLElement = (document.body || document.documentE
     }
 };
 
-// 获取页面或元素的可视宽高(兼容写法, 不包括工具栏和滚动条)
-export interface ClientInterface {
+// 获取页面或元素的宽高 = 可视宽高 + 滚动条 + 边框
+export interface OffsetInterface {
     width: number;
     height: number;
 }
-export function getClientWH(el: HTMLElement = (document.body || document.documentElement)): undefined | ClientInterface {
+export function getOffsetWH(el: HTMLElement = (document.body || document.documentElement)): undefined | OffsetInterface {
     if (!isDom(el)) {
         return;
     }
     if (el === document.body || el === document.documentElement) {
-        const width = el.clientWidth || window.screen.availWidth;
-        const height = el.clientHeight || window.screen.availHeight;
+        const width = window.innerWidth;
+        const height = window.innerHeight;
         return { width, height };
     } else {
-        const width = el.clientWidth;
-        const height = el.clientHeight;
+        const width = el.offsetWidth;
+        const height = el.offsetHeight;
         return { width, height };
     }
 };
