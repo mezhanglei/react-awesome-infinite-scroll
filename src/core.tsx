@@ -18,7 +18,6 @@ export enum COMPONENT_TYPE {
 export interface Props {
     height?: number; // 设置固定高度滚动
     containerStyle?: CSSProperties; // 组件内部的style样式
-    renderItem: (item: any, index: number) => any; // 渲染item
     pullDownToRefresh?: boolean; // 是否下拉刷新
     releaseComponent?: ReactNode; // 释放下拉时的提示组件
     pullDownComponent?: ReactNode; // 下拉时的提示组件
@@ -40,6 +39,7 @@ export interface Props {
     isError?: boolean; // 是否加载出错
     forbidTrigger?: boolean; // 禁止滚动加载触发，当页面上有多个滚动列表且滚动父元素相同，则可以通过此api禁止滚动触发加载
     dataSource: any[]; // 数据源
+    children: any;
 }
 
 export interface ScrollRef {
@@ -58,7 +58,6 @@ const InfiniteScroll = React.forwardRef<ScrollRef, Props>((props, ref) => {
     const {
         height,
         containerStyle,
-        renderItem,
         pullDownToRefresh,
         releaseComponent,
         pullDownComponent,
@@ -416,10 +415,6 @@ const InfiniteScroll = React.forwardRef<ScrollRef, Props>((props, ref) => {
             </div>
         );
 
-    const renderChildren = (dataSource: any[] = []): any[] => {
-        return dataSource?.map((item: any, index: number) => (renderItem(item, index)));
-    };
-
     return (
         <div
             style={outerDivStyle}
@@ -432,7 +427,13 @@ const InfiniteScroll = React.forwardRef<ScrollRef, Props>((props, ref) => {
             >
                 {!inverse && refreshComponent}
                 {inverse && loadingMoreComponent}
-                {renderChildren(dataSource)}
+                {
+                    React.Children.map(props.children, (child, index) => {
+                        return React.cloneElement(React.Children.only(child), {
+                            style: { ...child.props.style }
+                        });
+                    })
+                }
                 {!inverse && loadingMoreComponent}
                 {inverse && refreshComponent}
             </div>

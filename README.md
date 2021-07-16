@@ -2,7 +2,7 @@
 
 English | [中文说明](./README_CN.md)
 
-[![Version](https://img.shields.io/badge/version-4.0.5-green)](https://www.npmjs.com/package/react-awesome-infinite-scroll)
+[![Version](https://img.shields.io/badge/version-4.0.6-green)](https://www.npmjs.com/package/react-awesome-infinite-scroll)
 
 # Introduction?
 
@@ -104,7 +104,6 @@ renderItem = (_, index) => {
     <InfiniteScroll
         dataSource={list}
         next={this.fetchMoreData}
-        renderItem={this.renderItem}
         scrollableParent={document.querySelector(".parent")} // or set "height", only one is need
         // height={500} // height
         hasMore={hasMore}
@@ -117,7 +116,13 @@ renderItem = (_, index) => {
                     <span>NO MORE</span>
                 </div> : null
         }
-      />
+      >
+        {
+            list?.map((item, index) => {
+                return renderItem(item, index);
+            })
+        }
+    </InfiniteScroll>
 </div>
 ```
 
@@ -179,7 +184,6 @@ _getScrollRef: function() {}_
 | pullDownComponent             | `ReactNode`           | -                                                              | Display components when pull down                                                                                 |
 | releaseComponent              | `ReactNode`           | -                                                              | Display components when relase                                                                                  |
 | dataSource                    | `any[]`               | -                                                              | `dataSource` is the dataSource of list                                                                                  |
-| renderItem                    | `ReactNode`           | -                                                              | `renderItem` is the template of list                                                                                  |
 
 # TODO-LIST
 - [ ] List of performance optimizations,  placeholders when not loaded

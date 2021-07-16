@@ -85,7 +85,6 @@ const Home: React.FC<any> = (props) => {
                 <InfiniteScroll
                     dataSource={list}
                     next={fetchMoreData}
-                    renderItem={renderItem}
                     scrollableParent={document.querySelector(".cart-index")}
                     hasMore={hasMore}
                     isError={isError}
@@ -103,14 +102,19 @@ const Home: React.FC<any> = (props) => {
                                 <span>没有更多内容了</span>
                             </div> : null
                     }
-                />
+                >
+                    {
+                        list?.map((item, index) => {
+                            return renderItem(item, index);
+                        })
+                    }
+                </InfiniteScroll>
             </div>
             <div>内部固定高度滚动</div>
             <div>
                 <InfiniteScroll
                     dataSource={list}
                     next={fetchMoreData}
-                    renderItem={renderItem}
                     hasMore={hasMore}
                     isError={isError}
                     pullDownToRefresh
@@ -128,7 +132,13 @@ const Home: React.FC<any> = (props) => {
                                 <span>没有更多内容了</span>
                             </div> : null
                     }
-                />
+                >
+                    {
+                        list?.map((item, index) => {
+                            return renderItem(item, index);
+                        })
+                    }
+                </InfiniteScroll>
             </div>
             <div>反向上拉刷新, 下拉加载(一般用于聊天框)</div>
             <div>
@@ -136,7 +146,6 @@ const Home: React.FC<any> = (props) => {
                     dataSource={list}
                     inverse
                     next={fetchMoreData}
-                    renderItem={renderItem}
                     hasMore={hasMore}
                     isError={isError}
                     pullDownToRefresh
@@ -154,7 +163,13 @@ const Home: React.FC<any> = (props) => {
                                 <span>没有更多内容了</span>
                             </div> : null
                     }
-                />
+                >
+                    {
+                        list?.map((item, index) => {
+                            return renderItem(item, index);
+                        })
+                    }
+                </InfiniteScroll>
             </div>
         </>
     );

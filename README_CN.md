@@ -2,7 +2,7 @@
 
 [English](./README.md) | 中文说明
 
-[![Version](https://img.shields.io/badge/version-4.0.5-green)](https://www.npmjs.com/package/react-awesome-infinite-scroll)
+[![Version](https://img.shields.io/badge/version-4.0.6-green)](https://www.npmjs.com/package/react-awesome-infinite-scroll)
 
 # 适用场景
 
@@ -104,7 +104,6 @@ renderItem = (_, index) => {
     <InfiniteScroll
         dataSource={list}
         next={this.fetchMoreData}
-        renderItem={this.renderItem}
         scrollableParent={document.querySelector(".parent")} // 和height二选一，选一种方式滚动
         // height={500} // height
         hasMore={hasMore}
@@ -117,7 +116,13 @@ renderItem = (_, index) => {
                     <span>NO MORE</span>
                 </div> : null
         }
-    />
+    >
+        {
+            list?.map((item, index) => {
+                return renderItem(item, index);
+            })
+        }
+    </InfiniteScroll>
 </div>
 ```
 
@@ -181,7 +186,6 @@ _getScrollRef: function() {}_
 | refreshingComponent           | `ReactNode`           | -                                                              | 刷新中的显示组件                                                                                  |
 | refreshEndComponent           | `ReactNode`           | -                                                              | 刷新完毕的显示组件                                                                                  |
 | dataSource                    | `any[]`               | -                                                              | dataSource数据源                                                                                  |
-| renderItem                    | `ReactNode`           | -                                                              | `renderItem` 列表渲染的模板                                                                                  |
 
 # TODO-LIST
 - [ ] 列表的性能优化, 未加载内容占位
