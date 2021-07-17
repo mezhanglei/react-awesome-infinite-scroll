@@ -151,7 +151,7 @@ const InfiniteScroll = React.forwardRef<ScrollRef, Props>((props, ref) => {
         }
 
         // 加载下一个列表时重置状态
-        if (props?.children?.length) {
+        if (props?.children) {
             if (loadNumRef.current > 0) {
                 resetStatus(target);
             }
@@ -164,7 +164,7 @@ const InfiniteScroll = React.forwardRef<ScrollRef, Props>((props, ref) => {
         return () => {
             removeEvents();
         };
-    }, [props?.children?.length]);
+    }, [props?.children]);
 
     // 加载到新数据后重置状态
     const resetStatus = (target: any) => {
