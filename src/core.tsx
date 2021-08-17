@@ -40,6 +40,7 @@ export interface Props {
     isError?: boolean; // 是否加载出错
     forbidTrigger?: boolean; // 禁止滚动加载触发，当页面上有多个滚动列表且滚动父元素相同，则可以通过此api禁止滚动触发加载
     children: any;
+    length?: number;
 }
 
 export interface ScrollRef {
@@ -151,7 +152,7 @@ const InfiniteScroll = React.forwardRef<ScrollRef, Props>((props, ref) => {
         }
 
         // 加载下一个列表时重置状态
-        if (props?.children) {
+        if (props?.length) {
             if (loadNumRef.current > 0) {
                 resetStatus(target);
             }
@@ -164,7 +165,7 @@ const InfiniteScroll = React.forwardRef<ScrollRef, Props>((props, ref) => {
         return () => {
             removeEvents();
         };
-    }, [props?.children]);
+    }, [props?.length]);
 
     // 加载到新数据后重置状态
     const resetStatus = (target: any) => {

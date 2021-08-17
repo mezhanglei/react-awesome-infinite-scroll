@@ -2,7 +2,7 @@
 
 English | [中文说明](./README_CN.md)
 
-[![Version](https://img.shields.io/badge/version-0.0.1-green)](https://www.npmjs.com/package/react-awesome-infinite-scroll)
+[![Version](https://img.shields.io/badge/version-0.0.2-green)](https://www.npmjs.com/package/react-awesome-infinite-scroll)
 
 # Introduction?
 
@@ -102,6 +102,7 @@ renderItem = (_, index) => {
 
 <div className="parent" style={{height: "500px", overflow: "auto"}}> // Currently set the outside scroll
     <InfiniteScroll
+        length={list?.length}
         next={this.fetchMoreData}
         scrollableParent={document.querySelector(".parent")} // or set "height", only one is need
         // height={500} // height
@@ -164,6 +165,7 @@ _getScrollRef: function() {}_
 
 | name                          | type                  | defaultValue                                                   | description                                                                                                      |
 | ----------------------------- | --------------------- | -------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| length                          | `number`            | -                                                              | the list's length                                                                                  |
 | next                          | `function`            | -                                                              | Load the request function of the list                                                                                  |
 | hasMore                       | `boolean`             | `true`                                                         | Controls whether the list is loaded(`true` is required for initialization)                                                                               |
 | loadingComponent              | `ReactNode`           | -                                                              | Display components at load time                                                  |

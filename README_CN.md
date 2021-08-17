@@ -2,7 +2,7 @@
 
 [English](./README.md) | 中文说明
 
-[![Version](https://img.shields.io/badge/version-0.0.1-green)](https://www.npmjs.com/package/react-awesome-infinite-scroll)
+[![Version](https://img.shields.io/badge/version-0.0.2-green)](https://www.npmjs.com/package/react-awesome-infinite-scroll)
 
 # 适用场景
 
@@ -102,6 +102,7 @@ renderItem = (_, index) => {
 
 <div className="parent" style={{height: "500px", overflow: "auto"}}> // 目前设置的外部滚动
     <InfiniteScroll
+        length={list?.length}
         next={this.fetchMoreData}
         scrollableParent={document.querySelector(".parent")} // 和height二选一，选一种方式滚动
         // height={500} // height
@@ -165,6 +166,7 @@ _getScrollRef: function() {}_
 
 | 名称                          | 类型                  | 默认值                                                         | 描述                                                                                                      |
 | ----------------------------- | --------------------- | -------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| length                          | `number`            | -                                                              | 列表的长度                                                                                  |
 | next                          | `function`            | -                                                              | 加载列表的请求函数                                                                                  |
 | hasMore                       | `boolean`             | `true`                                                         | 控制列表是否加载完成(初始化时需要手动赋值`true`)                                                                               |
 | loadingComponent              | `ReactNode`           | -                                                              | 加载时的展示组件                                                  |

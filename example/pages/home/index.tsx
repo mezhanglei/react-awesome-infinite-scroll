@@ -83,6 +83,7 @@ const Home: React.FC<any> = (props) => {
             <div>外部容器滚动</div>
             <div className="cart-index" style={{ height: "300px", overflow: "auto" }}>
                 <InfiniteScroll
+                    length={list?.length}
                     next={fetchMoreData}
                     scrollableParent={document.querySelector(".cart-index")}
                     hasMore={hasMore}
@@ -112,6 +113,7 @@ const Home: React.FC<any> = (props) => {
             <div>内部固定高度滚动</div>
             <div>
                 <InfiniteScroll
+                    length={list?.length}
                     next={fetchMoreData}
                     hasMore={hasMore}
                     isError={isError}
@@ -141,6 +143,7 @@ const Home: React.FC<any> = (props) => {
             <div>反向上拉刷新, 下拉加载(一般用于聊天框)</div>
             <div>
                 <InfiniteScroll
+                    length={list?.length}
                     inverse
                     next={fetchMoreData}
                     hasMore={hasMore}
