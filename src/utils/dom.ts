@@ -1,11 +1,19 @@
 import { isDom } from "./type";
 
-// 返回元素或事件对象的可视位置
-export interface SizeInterface {
+/**
+ * 返回元素的视窗内的位置
+ * @param el 
+ * @returns 
+ */
+ export function getRect(el: HTMLElement) {
+    return el.getBoundingClientRect()
+}
+
+// 返回元素或事件对象的视口位置
+export function getClientXY(el: MouseEvent | TouchEvent | HTMLElement): null | {
     x: number;
     y: number;
-}
-export function getClientXY(el: MouseEvent | TouchEvent | HTMLElement): null | SizeInterface {
+} {
     let pos = null;
     if ("clientX" in el) {
         pos = {
@@ -20,52 +28,33 @@ export function getClientXY(el: MouseEvent | TouchEvent | HTMLElement): null | S
             };
         }
     } else if (isDom(el)) {
-        pos = {
-            x: el.getBoundingClientRect().left,
-            y: el.getBoundingClientRect().top
-        };
+        if ([document.documentElement, document.body].includes(el)) {
+            pos = {
+                x: 0,
+                y: 0
+            }
+        } else {
+            pos = {
+                x: getRect(el)?.left,
+                y: getRect(el).top
+            };
+        }
     }
     return pos;
 }
 
 /**
- * 获取元素或事件对象的相对于页面的真实位置 = 滚动高度 + 可视位置
- * @param el 元素或事件对象
+ * 获取页面或元素的卷曲滚动(兼容写法)
+ * @param el 目标元素
  */
-export function getPositionInPage(el: MouseEvent | TouchEvent | HTMLElement): null | SizeInterface {
-    const clientXY = getClientXY(el);
-    const scroll = getScroll();
-    let pos = null;
-    if (clientXY) {
-        pos = {
-            x: clientXY.x + (scroll?.x || 0),
-            y: clientXY.y + (scroll?.y || 0)
-        }
-    }
-    return pos;
-};
-
-// 滚动的兼容
-export function setScroll(ele: HTMLElement, x: number, y: number) {
-    if (ele === document.body) {
-        if (document.documentElement) {
-            document.documentElement.scrollTop = y || 0;
-            document.documentElement.scrollLeft = y || 0;
-        } else if (window) {
-            window.scrollTo(x || 0, y || 0);
-        }
-    } else {
-        ele.scrollTop = y || 0;
-        ele.scrollLeft = x || 0;
-    }
-};
-
-// 获取页面或元素的卷曲滚动(兼容写法)
-export function getScroll(el: HTMLElement = (document.body || document.documentElement)): any {
+ export function getScroll(el: HTMLElement = (document.body || document.documentElement)): undefined | {
+    x: number;
+    y: number;
+} {
     if (!isDom(el)) {
         return;
     }
-    if (el === document.body || el === document.documentElement) {
+    if ([document.documentElement, document.body].includes(el)) {
         const doc = el.ownerDocument; // 节点所在document对象
         const win: any = doc.defaultView; // 包含document的window对象
         const x = doc.documentElement.scrollLeft || win.pageXOffset || doc.body.scrollLeft;
@@ -78,16 +67,55 @@ export function getScroll(el: HTMLElement = (document.body || document.documentE
     }
 };
 
+/**
+ * 获取元素或事件对象的相对于页面的真实位置 = 滚动高度 + 可视位置
+ * @param el 元素或事件对象
+ */
+export function getPositionInPage(el: MouseEvent | TouchEvent | HTMLElement): null | {
+    x: number;
+    y: number;
+} {
+    const clientXY = getClientXY(el);
+    const scroll = getScroll();
+    let pos = null;
+    if (clientXY) {
+        pos = {
+            x: clientXY.x + (scroll?.x || 0),
+            y: clientXY.y + (scroll?.y || 0)
+        }
+    }
+    return pos;
+};
+
+/**
+ * 设置滚动距离（兼容写法）
+ * @param ele 目标元素
+ * @param x 横轴坐标
+ * @param y 纵轴坐标
+ */
+ export function setScroll(ele: HTMLElement, x: number, y: number): void {
+    if ([document.documentElement, document.body].includes(ele)) {
+        document.documentElement.scrollTop = y || 0;
+        document.documentElement.scrollLeft = x || 0;
+    } else {
+        if (ele) {
+            ele.scrollTop = y || 0;
+            ele.scrollLeft = x || 0;
+        } else if (window) {
+            window.scrollTo(x || 0, y || 0);
+        }
+    }
+};
+
 // 获取页面或元素的宽高 = 可视宽高 + 滚动条 + 边框
-export interface OffsetInterface {
+export function getOffsetWH(el: HTMLElement): undefined | {
     width: number;
     height: number;
-}
-export function getOffsetWH(el: HTMLElement = (document.body || document.documentElement)): undefined | OffsetInterface {
+} {
     if (!isDom(el)) {
         return;
     }
-    if (el === document.body || el === document.documentElement) {
+    if ([document.documentElement, document.body].includes(el)) {
         const width = window.innerWidth;
         const height = window.innerHeight;
         return { width, height };
@@ -102,9 +130,9 @@ export function getOffsetWH(el: HTMLElement = (document.body || document.documen
  * 判断目标元素内部是否可以滚动
  * @param {*} ele 内容可以scroll的元素
  */
-export function eleCanScroll(ele: HTMLElement) {
+ export function eleCanScroll(ele: HTMLElement): boolean {
     if (!isDom(ele)) {
-        return;
+        return false;
     }
     if (ele.scrollTop > 0) {
         return true;
@@ -120,20 +148,20 @@ export function eleCanScroll(ele: HTMLElement) {
  * @param {*} target 目标元素
  * @param {*} step 遍历层数，设置可以限制向上冒泡查找的层数
  */
-export function getScrollParent(target: any, step?: number) {
-    const root = [document.body, document.documentElement];
+ export function getScrollParent(target: any, step?: number): HTMLElement {
+    const root = [document.documentElement, document.body];
     if (root.indexOf(target) > -1) {
         return document.body || document.documentElement;
     };
 
-    let scrollParent = target.parentNode as HTMLElement;
+    let scrollParent = target?.parentNode;
 
     if (step) {
         while (root.indexOf(scrollParent) == -1 && step > 0) {
             if (eleCanScroll(scrollParent)) {
                 return scrollParent;
             }
-            scrollParent = scrollParent.parentNode as HTMLElement;
+            scrollParent = scrollParent.parentNode;
             step--;
         }
     } else {
@@ -141,7 +169,7 @@ export function getScrollParent(target: any, step?: number) {
             if (eleCanScroll(scrollParent)) {
                 return scrollParent;
             }
-            scrollParent = scrollParent.parentNode as HTMLElement;
+            scrollParent = scrollParent.parentNode;
         }
     }
     return document.body || document.documentElement;
@@ -154,12 +182,11 @@ export function getScrollParent(target: any, step?: number) {
  * @param handler 事件函数
  * @param inputOptions 配置
  */
- interface InputOptionsType {
+ export function addEvent(el: any, event: string, handler: (...rest: any[]) => any, inputOptions?: {
     captrue?: boolean,
     once?: boolean,
     passive?: boolean
-}
-export function addEvent(el: any, event: string, handler: (...rest: any[]) => any, inputOptions?: InputOptionsType): void {
+}): void {
     if (!el) return;
     // captrue: true事件捕获 once: true只调用一次,然后销毁 passive: true不调用preventDefault
     const options = { capture: false, once: false, passive: false, ...inputOptions };
@@ -180,7 +207,11 @@ export function addEvent(el: any, event: string, handler: (...rest: any[]) => an
  * @param handler 事件函数
  * @param inputOptions 配置
  */
-export function removeEvent(el: any, event: string, handler: (...rest: any[]) => any, inputOptions?: InputOptionsType): void {
+export function removeEvent(el: any, event: string, handler: (...rest: any[]) => any, inputOptions?: {
+    captrue?: boolean,
+    once?: boolean,
+    passive?: boolean
+}): void {
     if (!el) return;
     const options = { capture: false, once: false, passive: false, ...inputOptions };
     if (el.removeEventListener) {

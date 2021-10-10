@@ -100,6 +100,7 @@ const InfiniteScroll = React.forwardRef<ScrollRef, Props>((props, ref) => {
     const [isError, setIsError] = useState<boolean | undefined>(false);
     const [prevScrollHeight, setPrevScrollHeight] = useState<number>(0);
     const [pullDistance, setPullDistance] = useState<number>(0);
+    const pullDistanceRef = useRef<number>(0);
 
     const scrollContainerRef = useRef<HTMLDivElement>(null);
     const scrollableRef = useRef<any>();
@@ -111,8 +112,7 @@ const InfiniteScroll = React.forwardRef<ScrollRef, Props>((props, ref) => {
     const forbidTriggerRef = useRef<boolean>();
     const preStartYRef = useRef<number>(0);
 
-    let mouseDown: boolean = false;
-    let mouseDragging: boolean = false;
+    let mouseDownRef = useRef<boolean>(false);
 
     // ref转发实例方法
     React.useImperativeHandle(ref, () => ({
@@ -153,6 +153,7 @@ const InfiniteScroll = React.forwardRef<ScrollRef, Props>((props, ref) => {
 
         // 加载下一个列表时重置状态
         if (props?.length) {
+            console.log(loadNumRef.current)
             if (loadNumRef.current > 0) {
                 resetStatus(target);
             }
@@ -179,6 +180,8 @@ const InfiniteScroll = React.forwardRef<ScrollRef, Props>((props, ref) => {
         setLoading(false);
         // 结束error状态
         errorChange(false);
+        // 设置加载状态
+        setRefreshType(COMPONENT_TYPE.END);
     };
 
     // error状态change
@@ -197,9 +200,8 @@ const InfiniteScroll = React.forwardRef<ScrollRef, Props>((props, ref) => {
         forbidTriggerRef.current = props.forbidTrigger;
     }, [props.forbidTrigger]);
 
-    // 滚动监听事件中无法获取到最新的state所以需要ref
+    // 监听滚动事件
     const onScrollListener = (event: EventType) => {
-        if(mouseDown) return;
         if (typeof onScroll === 'function') {
             setTimeout(() => onScroll && onScroll(event), 0);
         }
@@ -223,7 +225,7 @@ const InfiniteScroll = React.forwardRef<ScrollRef, Props>((props, ref) => {
     const initDom = (scrollableParent: HTMLElement) => {
         if (forbidTriggerRef.current) return;
         // 滚动父节点绑定事件(文档根节点不能绑定事件)
-        const el: any = scrollableParent === (document.body || document.documentElement) ? (document || window) : scrollableParent;
+        const el: any = [document.documentElement, document.body].includes(scrollableParent) ? (document || window) : scrollableParent;
         eventRef.current = el;
 
         if (el) {
@@ -232,8 +234,8 @@ const InfiniteScroll = React.forwardRef<ScrollRef, Props>((props, ref) => {
         }
 
         if (pullDownToRefresh && el) {
-            addEvent(el, dragEventFor.start, onStart);
-            addEvent(el, dragEventFor.move, onMove);
+            addEvent(document, dragEventFor.start, onStart);
+            addEvent(document, dragEventFor.move, onMove);
             addEvent(document, dragEventFor.stop, onEnd);
         }
     };
@@ -255,11 +257,9 @@ const InfiniteScroll = React.forwardRef<ScrollRef, Props>((props, ref) => {
     };
 
     const onStart = (evt: EventType) => {
-        evt.preventDefault();
-        setPullDistance(0);
         const condition = inverse ? !isElementAtBottom(scrollableRef.current, thresholdValue) : !isElementAtTop(scrollableRef.current, thresholdValue);
         if (condition) return;
-        mouseDown = true;
+        mouseDownRef.current = true;
         preStartYRef.current = getPositionInPage(evt)?.y || 0;
         const scrollContainerDom = scrollContainerRef.current;
         if (scrollContainerDom) {
@@ -269,8 +269,7 @@ const InfiniteScroll = React.forwardRef<ScrollRef, Props>((props, ref) => {
     };
 
     const onMove = (evt: EventType) => {
-        evt.preventDefault();
-        if (!mouseDown) return;
+        if (!mouseDownRef.current) return;
         if (minPullDown > maxPullDown) {
             console.warn(`"minPullDown" is large than "maxPullDown", please set "maxPullDown" and "maxPullDown" should large than "minPullDown"`);
             return;
@@ -281,21 +280,29 @@ const InfiniteScroll = React.forwardRef<ScrollRef, Props>((props, ref) => {
 
         const startY = getPositionInPage(evt)?.y || 0;
         const deltaY = startY - preStartYRef.current;
-        setPullDistance(Math.min(Math.abs(deltaY), maxHeight));
+
+        if (inverse) {
+            if (deltaY < 0) {
+                const num = Math.max(deltaY, -maxHeight);
+                setPullDistance(num);
+                pullDistanceRef.current = num;
+                Raf.setRaf(() => setDrag(num));
+            }
+        } else {
+            if (deltaY > 0) {
+                const num = Math.min(deltaY, maxHeight)
+                setPullDistance(num);
+                pullDistanceRef.current = num;
+                Raf.setRaf(() => setDrag(num));
+            }
+        }
+
         // 最小判断边界
         if (Math.abs(deltaY) >= minHeight) {
             setRefreshType(COMPONENT_TYPE.RELEASE);
         } else {
             setRefreshType(COMPONENT_TYPE.PULL);
         }
-
-        // 执行偏移
-        if (inverse) {
-            Raf.setRaf(() => setDrag(Math.max(deltaY, -maxHeight)));
-        } else {
-            Raf.setRaf(() => setDrag(Math.min(deltaY, maxHeight)));
-        }
-        mouseDragging = true;
     };
 
     const onEnd = (evt: EventType) => {
@@ -303,18 +310,15 @@ const InfiniteScroll = React.forwardRef<ScrollRef, Props>((props, ref) => {
             throw new Error(`"refreshFunction" is not function or missing`);
         }
 
-        mouseDown = false;
-        setRefreshType(COMPONENT_TYPE.REFRESHING);
-        setTimeout(() => {
-            if (mouseDragging) {
-                refreshFunction && refreshFunction();
-                mouseDragging = false;
-                setRefreshType(COMPONENT_TYPE.END);
-                Raf.setRaf(resetDrag);
-                preStartYRef.current = 0;
-                setPullDistance(0);
-            }
-        }, 1000);
+        mouseDownRef.current = false;
+        if (Math.abs(pullDistanceRef.current) > 0) {
+            setRefreshType(COMPONENT_TYPE.REFRESHING);
+            refreshFunction && refreshFunction();
+            Raf.setRaf(resetDrag);
+            preStartYRef.current = 0;
+            setPullDistance(0);
+            pullDistanceRef.current = 0;
+        }
     };
 
     const resetDrag = () => {
@@ -328,7 +332,7 @@ const InfiniteScroll = React.forwardRef<ScrollRef, Props>((props, ref) => {
     const setDrag = (move: number) => {
         const childrenContainer = childrenContainerRef.current;
         if (childrenContainer) {
-            childrenContainer.style.transition = `transform 0.3s`;
+            childrenContainer.style.transition = `transform 0.2s cubic-bezier(0,0,0.31,1)`;
             childrenContainer.style.transform = `translate3d(0px, ${move}px, 0px)`;
         }
     };
@@ -396,10 +400,11 @@ const InfiniteScroll = React.forwardRef<ScrollRef, Props>((props, ref) => {
         [COMPONENT_TYPE.REFRESHING]: refreshingComponent,
         [COMPONENT_TYPE.END]: refreshEndComponent
     };
+
     const refreshComponent =
         pullDownToRefresh && (
             <div
-                style={{ display: pullDistance ? 'block' : 'none' }}
+                style={{ display: (pullDistance || refreshType === COMPONENT_TYPE.REFRESHING) ? 'block' : 'none' }}
             >
                 <span>
                     {refreshProps[refreshType]}
@@ -418,7 +423,7 @@ const InfiniteScroll = React.forwardRef<ScrollRef, Props>((props, ref) => {
                 style={insideStyle}
             >
                 <div ref={childrenContainerRef}>
-                    {refreshComponent}
+                    {!inverse && refreshComponent}
                     {inverse && loadingMoreComponent}
                     {
                         React.Children.map(props.children, (child, index) => {
@@ -428,7 +433,7 @@ const InfiniteScroll = React.forwardRef<ScrollRef, Props>((props, ref) => {
                         })
                     }
                     {!inverse && loadingMoreComponent}
-                    {refreshComponent}
+                    {inverse && refreshComponent}
                 </div>
             </div>
         </div>
@@ -436,4 +441,3 @@ const InfiniteScroll = React.forwardRef<ScrollRef, Props>((props, ref) => {
 });
 
 export default InfiniteScroll;
-

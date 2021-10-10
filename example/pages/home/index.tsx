@@ -50,7 +50,7 @@ const Home: React.FC<any> = (props) => {
                 };
 
                 resolve(listRef.current.concat(Array.from({ length: 20 })))
-            }, 500);
+            }, 1000);
         }).then((res: any) => {
             return listChange(res);
         }).catch(err => {
@@ -62,7 +62,7 @@ const Home: React.FC<any> = (props) => {
         new Promise((resolve, reject) => {
             setTimeout(() => {
                 resolve(listRef.current.concat(Array.from({ length: 20 })))
-            }, 500);
+            }, 1000);
         }).then((res: any) => {
             return listChange(res);
         }).catch(err => {
@@ -89,7 +89,7 @@ const Home: React.FC<any> = (props) => {
                     hasMore={hasMore}
                     isError={isError}
                     pullDownToRefresh
-                    refreshFunction={fetchMoreData}
+                    refreshFunction={reload}
                     pullDownComponent={<div style={{ height: "50px", background: "green" }}>下拉</div>}
                     releaseComponent={<div style={{ height: "50px", background: "red" }}>释放</div>}
                     refreshingComponent={<div style={{ height: "50px", background: "green" }}>加载中</div>}
@@ -119,7 +119,7 @@ const Home: React.FC<any> = (props) => {
                     isError={isError}
                     pullDownToRefresh
                     height={300}
-                    refreshFunction={fetchMoreData}
+                    refreshFunction={reload}
                     pullDownComponent={<div style={{ height: "50px", background: "green" }}>下拉</div>}
                     releaseComponent={<div style={{ height: "50px", background: "red" }}>释放</div>}
                     refreshingComponent={<div style={{ height: "50px", background: "green" }}>加载中</div>}
@@ -150,7 +150,7 @@ const Home: React.FC<any> = (props) => {
                     isError={isError}
                     pullDownToRefresh
                     height={300}
-                    refreshFunction={fetchMoreData}
+                    refreshFunction={reload}
                     pullDownComponent={<div style={{ height: "50px", background: "green" }}>下拉</div>}
                     releaseComponent={<div style={{ height: "50px", background: "red" }}>释放</div>}
                     refreshingComponent={<div style={{ height: "50px", background: "green" }}>加载中</div>}

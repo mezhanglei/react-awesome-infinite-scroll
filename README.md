@@ -2,7 +2,7 @@
 
 English | [中文说明](./README_CN.md)
 
-[![Version](https://img.shields.io/badge/version-0.0.2-green)](https://www.npmjs.com/package/react-awesome-infinite-scroll)
+[![Version](https://img.shields.io/badge/version-0.0.3-green)](https://www.npmjs.com/package/react-awesome-infinite-scroll)
 
 # Introduction?
 
@@ -104,6 +104,7 @@ renderItem = (_, index) => {
     <InfiniteScroll
         length={list?.length}
         next={this.fetchMoreData}
+        refreshFunction={reload}
         scrollableParent={document.querySelector(".parent")} // or set "height", only one is need
         // height={500} // height
         hasMore={hasMore}
