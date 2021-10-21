@@ -4,70 +4,36 @@ import InfiniteScroll from '../../../src/index';
 
 
 const Home: React.FC<any> = (props) => {
-    const [hasMore, setHasMore] = useState<boolean>(true);
-    const [isError, setIsError] = useState<boolean>(true);
-    const isErrorRef = useRef<boolean>(true);
-    const [total, setTotal] = useState<number>(800);
-    const [maxLength, setMaxLength] = useState<number>(800);
-    const [list, setList] = useState<any[]>([]);
-    const listRef = useRef<any[]>([]);
+
+    const total = 150;
+    const [list, setList] = useState([]);
+    const [hasMore, setHasMore] = useState<boolean>();
+    const [isRefreshing, setIsRefreshing] = useState<boolean>();
 
     useEffect(() => {
         const res = Array.from({ length: 100 })
-        listChange(res)
-        setHasMore(res?.length < total)
+        setList(res);
+        setHasMore(res?.length < total);
     }, [])
-
-    const listChange = (value: any[]) => {
-        listRef.current = value;
-        setList(value);
-    }
-
-    const isErrorChange = (value: boolean) => {
-        isErrorRef.current = value;
-        setIsError(value);
-    }
 
     // loading more
     const fetchMoreData = () => {
-
-        if (listRef.current.length >= maxLength) {
-            setHasMore(false);
-            return;
-        }
-
-        if (listRef.current.length >= total) {
-            setHasMore(false);
-            return;
-        }
-
-        // simulate request
-        new Promise((resolve, reject) => {
-            setTimeout(() => {
-                // creat a fake 'error' ,so not Use this in real life ;
-                if (listRef.current.length >= 300 && !isErrorRef.current) {
-                    reject();
-                };
-
-                resolve(listRef.current.concat(Array.from({ length: 20 })))
-            }, 1000);
-        }).then((res: any) => {
-            return listChange(res);
-        }).catch(err => {
-            isErrorChange(true);
-        })
+        setTimeout(() => {
+            const next = list?.concat(Array.from({ length: 20 }))
+            setList(next);
+            if (next?.length > 160) {
+                setHasMore(false)
+            }
+        }, 1000);
     };
 
     const reload = () => {
-        new Promise((resolve, reject) => {
-            setTimeout(() => {
-                resolve(listRef.current.concat(Array.from({ length: 20 })))
-            }, 1000);
-        }).then((res: any) => {
-            return listChange(res);
-        }).catch(err => {
-            isErrorChange(true);
-        })
+        setIsRefreshing(true)
+        setTimeout(() => {
+            const res = Array.from({ length: 100 })
+            setList(res);
+            setIsRefreshing(false)
+        }, 1000);
     }
 
     const renderItem = (_, index: number) => {
@@ -87,7 +53,7 @@ const Home: React.FC<any> = (props) => {
                     next={fetchMoreData}
                     scrollableParent={document.querySelector(".cart-index")}
                     hasMore={hasMore}
-                    isError={isError}
+                    isRefreshing={isRefreshing}
                     pullDownToRefresh
                     refreshFunction={reload}
                     pullDownComponent={<div style={{ height: "50px", background: "green" }}>下拉</div>}
@@ -95,9 +61,8 @@ const Home: React.FC<any> = (props) => {
                     refreshingComponent={<div style={{ height: "50px", background: "green" }}>加载中</div>}
                     refreshEndComponent={<div style={{ height: "50px", background: "red" }}>加载完成</div>}
                     loadingComponent={<div style={{ textAlign: 'center' }}><h4>Loading...</h4></div>}
-                    errorComponent={<div style={{ textAlign: "center" }}><span>加载失败？点击<a onClick={reload}>重新加载</a></span></div>}
                     endComponent={
-                        (list?.length && !maxLength) ?
+                        (list?.length) ?
                             <div style={{ textAlign: 'center', fontWeight: 'normal', color: '#999' }}>
                                 <span>没有更多内容了</span>
                             </div> : null
@@ -116,7 +81,7 @@ const Home: React.FC<any> = (props) => {
                     length={list?.length}
                     next={fetchMoreData}
                     hasMore={hasMore}
-                    isError={isError}
+                    isRefreshing={isRefreshing}
                     pullDownToRefresh
                     height={300}
                     refreshFunction={reload}
@@ -125,9 +90,8 @@ const Home: React.FC<any> = (props) => {
                     refreshingComponent={<div style={{ height: "50px", background: "green" }}>加载中</div>}
                     refreshEndComponent={<div style={{ height: "50px", background: "red" }}>加载完成</div>}
                     loadingComponent={<div style={{ textAlign: 'center' }}><h4>Loading...</h4></div>}
-                    errorComponent={<div style={{ textAlign: "center" }}><span>加载失败？点击<a onClick={reload}>重新加载</a></span></div>}
                     endComponent={
-                        (list?.length && !maxLength) ?
+                        (list?.length) ?
                             <div style={{ textAlign: 'center', fontWeight: 'normal', color: '#999' }}>
                                 <span>没有更多内容了</span>
                             </div> : null
@@ -147,7 +111,7 @@ const Home: React.FC<any> = (props) => {
                     inverse
                     next={fetchMoreData}
                     hasMore={hasMore}
-                    isError={isError}
+                    isRefreshing={isRefreshing}
                     pullDownToRefresh
                     height={300}
                     refreshFunction={reload}
@@ -156,9 +120,8 @@ const Home: React.FC<any> = (props) => {
                     refreshingComponent={<div style={{ height: "50px", background: "green" }}>加载中</div>}
                     refreshEndComponent={<div style={{ height: "50px", background: "red" }}>加载完成</div>}
                     loadingComponent={<div style={{ textAlign: 'center' }}><h4>Loading...</h4></div>}
-                    errorComponent={<div style={{ textAlign: "center" }}><span>加载失败？点击<a onClick={reload}>重新加载</a></span></div>}
                     endComponent={
-                        (list?.length && !maxLength) ?
+                        (list?.length) ?
                             <div style={{ textAlign: 'center', fontWeight: 'normal', color: '#999' }}>
                                 <span>没有更多内容了</span>
                             </div> : null

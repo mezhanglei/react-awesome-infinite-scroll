@@ -68,24 +68,31 @@ export function getClientXY(el: MouseEvent | TouchEvent | HTMLElement): null | {
 };
 
 /**
- * 获取元素或事件对象的相对于页面的真实位置 = 滚动高度 + 可视位置
- * @param el 元素或事件对象
+ * 返回事件对象相对于父元素的真实位置
+ * @param el 事件对象
+ * @param parent 父元素
  */
-export function getPositionInPage(el: MouseEvent | TouchEvent | HTMLElement): null | {
+ export function getEventPosition(el: MouseEvent | TouchEvent, parent: HTMLElement = document.body || document.documentElement): null | {
     x: number;
     y: number;
 } {
-    const clientXY = getClientXY(el);
-    const scroll = getScroll();
     let pos = null;
-    if (clientXY) {
+    if ("clientX" in el) {
         pos = {
-            x: clientXY.x + (scroll?.x || 0),
-            y: clientXY.y + (scroll?.y || 0)
+            x: el?.clientX - getRect(parent).left,
+            y: el?.clientY - getRect(parent).top,
+        };
+    } else if ("touches" in el) {
+        if (el?.touches[0]) {
+            pos = {
+                x: el?.touches[0]?.clientX - getRect(parent).left,
+                y: el?.touches[0]?.clientY - getRect(parent).top
+            };
         }
     }
+
     return pos;
-};
+}
 
 /**
  * 设置滚动距离（兼容写法）
