@@ -39,7 +39,7 @@ export interface ListProps {
     scrollableParent?: HTMLElement | Element | null; // 不设置则默认自动搜索滚动父元素， 设置在该父元素内滚动，建议设置以节省性能，设置forbidTrigger可以阻止滚动触发
     forbidTrigger?: boolean; // 禁止滚动加载触发，当页面上有多个滚动列表且滚动父元素相同，则可以通过此api禁止滚动触发加载
     children: any;
-    length?: number;
+    length: number;
 };
 
 export interface ListState {
@@ -49,17 +49,14 @@ export interface ListState {
     pullDistance: number, // 下拉距离
     prevLength?: number // 上一个列表的长度
 }
-
 export interface ScrollRef {
     scrollTo: (x: number, y: number) => void;
     getScrollRef: () => any;
 }
-
 export enum ScrollDirection {
     UP = "up",
     DOWN = "down"
 }
-
 // Simple abstraction for dragging events names.
 const eventsFor = {
     touch: {
@@ -73,11 +70,8 @@ const eventsFor = {
         stop: 'mouseup'
     }
 };
-
 // 根据当前设备看是否触发
 let dragEventFor = isMobile() ? eventsFor.touch : eventsFor.mouse;
-
-
 export default class InfiniteScroll extends React.Component<ListProps, ListState> {
     scrollWrap: HTMLDivElement | null;
     childrenWrap: HTMLDivElement | null;
@@ -98,33 +92,32 @@ export default class InfiniteScroll extends React.Component<ListProps, ListState
             pullDistance: 0
         };
     }
-
     static defaultProps = {
         minPullDown: 10,
         maxPullDown: 50
     }
-
     componentDidMount() {
-        setTimeout(() => {
-            this.scrollRoot = this.getScrollableTarget();
-            // 绑定事件
-            const {
-                scrollableParent,
-                height
-            } = this.props;
-            const target = this.scrollRoot;
-            if (target) {
-                this.initDom(target);
-                // 节点设置警告
-                if (scrollableParent && height) {
-                    console.error(`"scrollableParent" and "height" only need one`);
-                }
-            }
-        }, 0);
+        this.addEvents();
     }
-
     componentWillUnmount() {
         this.removeEvents()
+    }
+
+    addEvents = () => {
+        this.scrollRoot = this.getScrollableTarget();
+        // 绑定事件
+        const {
+            scrollableParent,
+            height
+        } = this.props;
+        const target = this.scrollRoot;
+        if (target) {
+            this.initDom(target);
+            // 节点设置警告
+            if (scrollableParent && height) {
+                console.error(`"scrollableParent" and "height" only need one`);
+            }
+        }
     }
 
     removeEvents = () => {
@@ -133,9 +126,7 @@ export default class InfiniteScroll extends React.Component<ListProps, ListState
         } = this.props;
         const event = this.event;
         if (event) {
-            const throttledOnScrollListener = throttle(this.onScrollListener);
-            removeEvent(event, 'scroll', throttledOnScrollListener);
-
+            removeEvent(event, 'scroll', this.onScrollListener);
             if (pullDownToRefresh) {
                 removeEvent(event, dragEventFor.start, this.onStart);
                 removeEvent(event, dragEventFor.move, this.onMove);
@@ -145,7 +136,6 @@ export default class InfiniteScroll extends React.Component<ListProps, ListState
             }
         }
     };
-
     // 获取滚动的父节点
     getScrollableTarget = (): any => {
         const scrollContainerDom = this.scrollWrap;
@@ -161,7 +151,6 @@ export default class InfiniteScroll extends React.Component<ListProps, ListState
             return target;
         }
     };
-
     // 初始化绑定事件(滚动节点可能是异步也可能是同步)
     initDom = (scrollableParent: HTMLElement) => {
         const {
@@ -172,25 +161,20 @@ export default class InfiniteScroll extends React.Component<ListProps, ListState
         // 滚动父节点绑定事件(文档根节点不能绑定事件)
         const el: any = [document.documentElement, document.body].includes(scrollableParent) ? (document || window) : scrollableParent;
         this.event = el;
-
         if (el) {
-            const throttledOnScrollListener = throttle(this.onScrollListener);
-            addEvent(el, 'scroll', throttledOnScrollListener);
+            addEvent(el, 'scroll', this.onScrollListener);
         }
-
         if (pullDownToRefresh && el) {
             addEvent(document, dragEventFor.start, this.onStart);
             addEvent(document, dragEventFor.move, this.onMove);
             addEvent(document, dragEventFor.stop, this.onEnd);
         }
     };
-
     componentDidUpdate(prevProps: ListProps, prevState: ListState) {
         // 长度没有变化
         const lengthNoChange = this.props.length === prevProps.length;
         // 刷新状态是否变化
         const refreshingChange = this.props?.isRefreshing !== prevProps?.isRefreshing;
-
         if (refreshingChange) {
             if (!this.props?.isRefreshing) {
                 this.setState({
@@ -198,15 +182,18 @@ export default class InfiniteScroll extends React.Component<ListProps, ListState
                 })
             }
         }
-
         if (lengthNoChange) return;
-
+        // 滚动节点出现后再重新监听事件
+        const newScrollRoot = this.getScrollableTarget();
+        if (newScrollRoot !== this.scrollRoot) {
+            removeEvent(this.event, 'scroll', this.onScrollListener);
+            this.addEvents();
+        }
         this.updateList();
     }
 
     static getDerivedStateFromProps(nextProps: ListProps, prevState: ListState) {
         const dataLengthChanged = nextProps.length !== prevState.prevLength;
-
         if (dataLengthChanged) {
             return {
                 ...prevState,
@@ -229,18 +216,15 @@ export default class InfiniteScroll extends React.Component<ListProps, ListState
             loading,
             scrollHeight,
         } = this.state;
-
         // 反向加载的时候需要重置滚动高度
         if (inverse && loading && this.isElementAtTop(target, thresholdValue)) {
             setScroll(target, 0, (scrollHeight && target.scrollHeight - scrollHeight) ? target.scrollHeight - scrollHeight : 50);
         }
-
         this.setState({
             loading: false,
             scrollHeight: target.scrollHeight
         });
     };
-
     // 监听滚动事件
     onScrollListener = (event: EventType) => {
         const { onScroll, inverse, thresholdValue, hasMore, next, forbidTrigger } = this.props;
@@ -250,15 +234,12 @@ export default class InfiniteScroll extends React.Component<ListProps, ListState
         if (typeof onScroll === 'function') {
             setTimeout(() => onScroll && onScroll(event), 0);
         }
-
         if (loading || forbidTrigger) return;
-
         const target = this.scrollRoot;
         if (!target) return;
         const atBottom = inverse
             ? this.isElementAtTop(target, thresholdValue)
             : this.isElementAtBottom(target, thresholdValue);
-
         // 加载数据
         if (atBottom && hasMore) {
             this.setState({
@@ -267,39 +248,32 @@ export default class InfiniteScroll extends React.Component<ListProps, ListState
             next && next();
         }
     };
-
     // 是否在顶部
     isElementAtTop = (target: HTMLElement, thresholdValue: number | string = 0.8) => {
         const scrollTop = getScroll(target)?.y || 0;
         const threshold = parseThreshold(thresholdValue);
-
         if (threshold.unit === ThresholdUnits.Pixel) {
             return (
                 scrollTop <= threshold.value
             );
         }
-
         return scrollTop <= 20;
     };
-
     // 是否在底部
     isElementAtBottom = (target: HTMLElement, thresholdValue: number | string = 0.8) => {
         const clientHeight = getOffsetWH(target)?.height || 0;
         const scrollTop = getScroll(target)?.y || 0;
         const threshold = parseThreshold(thresholdValue);
-
         if (threshold.unit === ThresholdUnits.Pixel) {
             return (
                 scrollTop + clientHeight >= target.scrollHeight - threshold.value
             );
         }
-
         return (
             scrollTop + clientHeight >=
             (threshold.value / 100) * target.scrollHeight
         );
     };
-
     onStart = (evt: EventType) => {
         const {
             inverse,
@@ -316,7 +290,6 @@ export default class InfiniteScroll extends React.Component<ListProps, ListState
             scrollContainerDom.style.transition = `transform 0.2s cubic-bezier(0,0,0.31,1)`;
         }
     };
-
     onMove = (evt: EventType) => {
         if (!this.dragging) return;
         const {
@@ -328,13 +301,10 @@ export default class InfiniteScroll extends React.Component<ListProps, ListState
             console.warn(`"minPullDown" is large than "maxPullDown", please set "maxPullDown" and "maxPullDown" should large than "minPullDown"`);
             return;
         }
-
         const minHeight = minPullDown;
         const maxHeight = maxPullDown;
-
         const eventY = getEventPosition(evt)?.y || 0;
         const deltaY = eventY - this.startY;
-
         if (inverse) {
             if (deltaY < 0) {
                 const num = Math.max(deltaY, -maxHeight);
@@ -352,7 +322,6 @@ export default class InfiniteScroll extends React.Component<ListProps, ListState
                 Raf.setRaf(() => this.setDrag(num));
             }
         }
-
         // 最小判断边界
         if (Math.abs(deltaY) >= minHeight) {
             this.setState({
@@ -364,7 +333,6 @@ export default class InfiniteScroll extends React.Component<ListProps, ListState
             })
         }
     };
-
     onEnd = (evt: EventType) => {
         const {
             refreshFunction,
@@ -375,7 +343,6 @@ export default class InfiniteScroll extends React.Component<ListProps, ListState
         if (typeof refreshFunction !== 'function') {
             throw new Error(`"refreshFunction" is not function or missing`);
         }
-
         this.dragging = false;
         if (Math.abs(pullDistance) > 0) {
             this.setState({
@@ -389,7 +356,6 @@ export default class InfiniteScroll extends React.Component<ListProps, ListState
             })
         }
     };
-
     resetDrag = () => {
         const childrenContainer = this.childrenWrap;
         if (childrenContainer) {
@@ -397,7 +363,6 @@ export default class InfiniteScroll extends React.Component<ListProps, ListState
             childrenContainer.style.willChange = 'none';
         }
     };
-
     setDrag = (move: number) => {
         const childrenContainer = this.childrenWrap;
         if (childrenContainer) {
@@ -405,7 +370,6 @@ export default class InfiniteScroll extends React.Component<ListProps, ListState
             childrenContainer.style.transform = `translate3d(0px, ${move}px, 0px)`;
         }
     };
-
     render() {
         const {
             children,
@@ -422,18 +386,15 @@ export default class InfiniteScroll extends React.Component<ListProps, ListState
             inverse,
             className
         } = this.props;
-
         const {
             loading,
             pullDistance,
             refreshType
         } = this.state;
-
         // 当设置了滚动固定高度, 下拉/上拉刷新时阻止元素溢出到外面显示
         const outerDivStyle: CSSProperties = pullDownToRefresh && height
             ? { overflow: 'hidden' }
             : {};
-
         // 当组件滚动的容器在外部（即设置了scrollableParent），则设置overflow: hidden, 以免组件内部出现滚动条
         const insideStyle: CSSProperties = {
             height: height || 'auto',
@@ -441,7 +402,6 @@ export default class InfiniteScroll extends React.Component<ListProps, ListState
             WebkitOverflowScrolling: 'touch',
             ...containerStyle,
         };
-
         // 加载更多相关组件
         const loadingMoreComponent = (
             <>
@@ -449,7 +409,6 @@ export default class InfiniteScroll extends React.Component<ListProps, ListState
                 {!hasMore && endComponent}
             </>
         );
-
         // 下拉刷新的相关组件
         const refreshProps: any = {
             [COMPONENT_TYPE.PULL]: pullDownComponent,
@@ -457,7 +416,6 @@ export default class InfiniteScroll extends React.Component<ListProps, ListState
             [COMPONENT_TYPE.REFRESHING]: refreshingComponent,
             [COMPONENT_TYPE.END]: refreshEndComponent
         };
-
         const refreshComponent =
             pullDownToRefresh && (
                 <div
@@ -468,7 +426,6 @@ export default class InfiniteScroll extends React.Component<ListProps, ListState
                     </span>
                 </div>
             );
-
         return (
             <div
                 style={outerDivStyle}
