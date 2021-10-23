@@ -2,7 +2,7 @@
 
 [English](./README.md) | 中文说明
 
-[![Version](https://img.shields.io/badge/version-0.1.1-green)](https://www.npmjs.com/package/react-awesome-infinite-scroll)
+[![Version](https://img.shields.io/badge/version-0.1.2-green)](https://www.npmjs.com/package/react-awesome-infinite-scroll)
 
 # 适用场景
 
@@ -98,6 +98,11 @@ const total = 150;
             }
     </InfiniteScroll>
 </div>
+```
+
+### Methods
+```
+   setScroll: (x, y) => void: 设置滚动根节点的滚动距离，当设置`inverse`时初始化会滚动到底部。
 ```
 
 ## 组件属性说明

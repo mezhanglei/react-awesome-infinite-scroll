@@ -2,7 +2,7 @@
 
 English | [中文说明](./README_CN.md)
 
-[![Version](https://img.shields.io/badge/version-0.1.1-green)](https://www.npmjs.com/package/react-awesome-infinite-scroll)
+[![Version](https://img.shields.io/badge/version-0.1.2-green)](https://www.npmjs.com/package/react-awesome-infinite-scroll)
 
 # Introduction?
 
@@ -98,6 +98,10 @@ const total = 150;
             }
     </InfiniteScroll>
 </div>
+```
+### Methods
+```
+   setScroll: (x, y) => void: Set the scroll distance of the scroll root node, when set `inverse` the initialization will scroll to the bottom.
 ```
 
 ## Attributes
