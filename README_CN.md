@@ -10,7 +10,7 @@
 
 # features
 
-- [x] 默认自动获取滚动父元素,建议手动设置`scrollableParent`
+- [x] 默认自动获取滚动父元素,或者手动设置`scrollableParent`
 - [x] 支持外部滚动和内部滚动触发加载，外面的滚动行为可以通过设置`scrollableParent`触发，里面的滚动通过设置`height`触发内部滚动
 - [x] `hashMore`控制加载行为，`isRefreshing`控制刷新行为
 - [x] 支持上拉加载,下拉刷新以及反向上拉刷新,下拉加载行为(聊天框场景),自定义组件的加载动态显示和行为
@@ -112,7 +112,7 @@ const total = 150;
 | length                          | `number`            | -                                                              | 列表的长度                                                                                  |
 | next                          | `function`            | -                                                              | 加载列表的请求函数                                                                                  |
 | hasMore                       | `boolean`             | -                                                         | 控制列表是否加载完成                                                                             |
-| isRefreshing                       | `boolean`             | 控制刷新行为-                                                         |                                                                                |
+| isRefreshing              | `boolean`           | -                                                              | 控制刷新行为                                                  |
 | loadingComponent              | `ReactNode`           | -                                                              | 加载时的展示组件                                                  |
 | height                        | `number`              | -                                                              | 设置固定高度滚动加载,和`scrollableParent`二选一, `scrollableParent`用来设置滚动容器                                                                              |
 | onScroll                      | `function`            | -                                                              | 滚动触发函数              |

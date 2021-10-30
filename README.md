@@ -10,7 +10,7 @@ Scroll load list, relying on the browser scroll to load, it's easy to loading li
 
 # featrues
 
-- [x] Automatically gets the scroll parent by default,It is recommended to set `scrollableParent` manually
+- [x] Automatically gets the scroll parent by default, or set `scrollableParent` manually
 - [x] Both internal and external scrolling of the component can be triggered，The scrolling behavior on the outside can be triggered by setting 'scrollableParent', and the scrolling on the inside can be triggered by setting 'height'
 - [x] Controls the loading by `hashMore`, Controls the refreshing by `isRefreshing`,
 - [x] Support pull - up load, pull - down refresh and reverse pull - up refresh, pull - down load behavior(Chat box scene), custom component load dynamic display and behavior
