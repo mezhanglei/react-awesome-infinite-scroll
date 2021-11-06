@@ -43,12 +43,12 @@ export interface ListProps {
 };
 
 export interface ListState {
-    refreshType: `${COMPONENT_TYPE}`, // 刷新类型
-    loading: boolean, // 是否正在加载中
-    scrollHeight: number, // 滚动内容的高度
-    pullDistance: number, // 下拉距离
-    prevLength?: number // 上一个列表的长度
-}
+    refreshType: COMPONENT_TYPE; // 刷新类型
+    loading: boolean; // 是否正在加载中
+    scrollHeight: number; // 滚动内容的高度
+    pullDistance: number; // 下拉距离
+    prevLength?: number; // 上一个列表的长度
+};
 export interface ScrollRef {
     scrollTo: (x: number, y: number) => void;
     getScrollRef: () => any;

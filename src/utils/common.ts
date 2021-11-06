@@ -9,7 +9,7 @@ export function throttle(fn: any, time: number = 160) {
     return function () {
         if (!timer) {
             timer = setTimeout(function () {
-                fn.apply(this, arguments);
+                fn.apply(null, arguments);
                 timer = null;
             }, time);
         }
