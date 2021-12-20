@@ -87,7 +87,12 @@ module.exports = {
                 use: [
                     "style-loader",
                     "css-loader",
-                    "less-loader"
+                    {
+                        loader: 'less-loader',
+                        options: {
+                            javascriptEnabled: true
+                        }
+                    }
                 ]
             },
             {
@@ -106,7 +111,12 @@ module.exports = {
                             localsConvention: 'camelCase'
                         } //css modules
                     },
-                    "less-loader"
+                    {
+                        loader: 'less-loader',
+                        options: {
+                            javascriptEnabled: true
+                        }
+                    }
                 ],
             },
             {
@@ -155,8 +165,14 @@ module.exports = {
                 minifyJS: true,
                 removeComments: true
             },
-            commonJs: configs.commonJs,
-            commonCSS: configs.commonCSS
+            // script引入的公共js文件
+            commonJs: [
+                // 'static/dll/base_dll.js'
+            ],
+            // link引入的公共css文件
+            commonCSS: [
+                // `static/fonts/iconfont.css?time=${new Date().getTime()}`
+            ]
         })
     ],
     resolve: configs.resolve,
@@ -164,7 +180,7 @@ module.exports = {
         contentBase: configs.root,
         index: configs.indexHtml,
         openPage: configs.openPage,
-        port: 8089,
+        port: 8081,
         host: getNetworkIp(),
         hot: true,
         inline: true,

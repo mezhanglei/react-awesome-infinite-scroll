@@ -56,14 +56,6 @@ const prodConfig = {
     staticOutPath: path.join(devOutputPath, 'static')
 };
 
-const commonJs = [
-    // publicPath + 'static/dll/base_dll.js'
-];
-
-const commonCSS = [
-    // publicPath + `static/fonts/iconfont.css?time=${new Date().getTime()}`
-];
-
 module.exports = {
     globalDefine,
     root,
@@ -73,8 +65,6 @@ module.exports = {
     staticPath,
     devOutputPath,
     publicPath,
-    commonJs,
-    commonCSS,
     ...baseConfig,
     ...devConfig,
     ...prodConfig
