@@ -96,7 +96,7 @@ module.exports = {
                 ]
             },
             {
-                test: /(\.less\.module)$/,
+                test: /(\.module\.less)$/,
                 use: [
                     "style-loader",
                     {
@@ -180,7 +180,7 @@ module.exports = {
         contentBase: configs.root,
         index: configs.indexHtml,
         openPage: configs.openPage,
-        port: 8081,
+        port: 8087,
         host: getNetworkIp(),
         hot: true,
         inline: true,
