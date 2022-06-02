@@ -1,1 +1,1 @@
-export declare function isDom(ele: any): boolean;
+export declare function isDom(ele: any): any;

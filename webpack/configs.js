@@ -1,71 +1,46 @@
+/**
+ * webpack的配置管理文件
+ */
 
-const glob = require("glob");
-const globAll = require("glob-all");
-const path = require("path");
+const os = require("os");
 
-const root = path.join(__dirname, '..');
-const srcPath = path.join(root, 'src');
-const examplePath = path.join(root, 'example');
-const staticPath = path.join(root, 'static');
-const devOutputPath = path.join(root, "dist");
-const htmlPages = path.join(root, 'public');
-const publicPath = '/';
-
-const baseConfig = {
-    assetsPath: '../',
-    resolve: {
-        extensions: [".ts", ".tsx", ".js", "jsx", ".json", ".less", ".less.module"],
-        alias: {
-            "@": `${examplePath}`,
-            "example": `${examplePath}`,
-            "static": `${staticPath}`
+// 自动获取可远程访问的ip
+function getNetworkIp() {
+  // 打开的host
+  let needHost = "";
+  try {
+    // 获得网络接口对象
+    let network = os.networkInterfaces();
+    // 遍历网络接口对象得到ipv4且不为127.0.0.1且internal为fasle(可远程访问)的host
+    Object.keys(network).map((item) => {
+      // 遍历每个类型的网络地址列表
+      network[item].map((sub) => {
+        if (
+          sub.family === "IPv4" &&
+          sub.address !== "127.0.0.1" &&
+          !sub.internal
+        ) {
+          needHost = sub.address;
         }
-    },
-    providePlugin: {
-        React: "react",
-        ReactDOM: "react-dom",
-        ReactRouterDOM: "react-router-dom",
-    },
-    babelPath: path.join(root, './.babelrc')
-};
+      });
+    });
+  } catch (e) {
+    needHost = "localhost";
+  }
+  return needHost;
+}
 
-const globalDefine = {
-    'process.env': {
-        MOCK: process.env.MOCK,
-        PUBLIC_PATH: JSON.stringify(publicPath || '/'),
-    }
-};
-
-const devConfig = {
-    useEslint: false,
-    useStylelint: true,
-    eslintPath: path.join(root, "./.stylelintrc.{js,ts}"),
-    stylelintPath: path.join(root, "./.stylelintrc.{js,ts}"),
-    checkStyleRoot: examplePath,
-    checkStylePath: ["src/**/*.{css,sass,scss,less}"],
-    indexHtml: 'index.html',
-    openPage: /^\//.test(publicPath) ? publicPath.replace(/^\/+/, '') : publicPath
-};
-
-const prodConfig = {
-    isAnalyz: false,
-    treeShakingCssPath: globAll.sync([
-        path.join(root, "src/**/*.{js,ts}"),
-        path.join(root, "src/**/*.less")
-    ]),
-    staticOutPath: path.join(devOutputPath, 'static')
-};
-
+// 合并为一个对象输出
 module.exports = {
-    globalDefine,
-    root,
-    htmlPages,
-    srcPath,
-    examplePath,
-    staticPath,
-    devOutputPath,
-    publicPath,
-    ...baseConfig,
-    ...devConfig,
-    ...prodConfig
+  // 是否开启体积分析插件
+  isAnalyz: false,
+  // 是否使用eslint true表示使用
+  useEslint: false,
+  // 是否使用stylelint true表示使用
+  useStylelint: false,
+  // 是否是打包环境
+  isProd: process.env.NODE_ENV === 'prod',
+  // 是否是开发环境
+  isDev: process.env.NODE_ENV === 'dev',
+  getNetworkIp,
 };

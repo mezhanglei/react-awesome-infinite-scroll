@@ -20,26 +20,16 @@
     content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale= 1.0, minimum-scale=1.0, viewport-fit=cover">
   <meta name="HandheldFriendly" content="true" />
   <meta http-equiv="Cache-Control" content="no-cache" />
-  <%
-    var commonCSS = htmlWebpackPlugin.options.commonCSS;
-    for(var i = 0; i < commonCSS.length; i++){
-  %>
-  <link rel="stylesheet" href="<%=commonCSS[i]%>" />
-  <%
-    }
-  %>
+  <% var commonCSS=htmlWebpackPlugin.options.commonCSS; for(var i=0; i < commonCSS.length; i++){ %>
+    <link rel="stylesheet" href="<%=commonCSS[i]%>" />
+  <% } %>
 </head>
 
 <body>
   <div id="root"></div>
-  <%
-    var commonJs = htmlWebpackPlugin.options.commonJs;
-    for(var i = 0; i < commonJs.length; i++){
-  %>
-  <script type="text/javascript" src="<%=commonJs[i]%>"></script>
-  <%
-    }
-  %>
+  <% var commonJs=htmlWebpackPlugin.options.commonJs; for(var i=0; i < commonJs.length; i++){ %>
+    <script type="text/javascript" src="<%=commonJs[i]%>"></script>
+  <% } %>
 </body>
 
 </html>
