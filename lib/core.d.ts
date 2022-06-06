@@ -1,12 +1,7 @@
 import React, { ReactNode, CSSProperties } from 'react';
 declare type fn = () => any;
 declare type EventType = MouseEvent | TouchEvent;
-export declare enum COMPONENT_TYPE {
-    PULL = "pullDown",
-    RELEASE = "release",
-    REFRESHING = "refreshing",
-    END = "refreshEnd"
-}
+export declare type COMPONENT_TYPE = "pullDown" | "release" | "refreshing" | "refreshEnd";
 export interface ListProps {
     height?: number;
     containerStyle?: CSSProperties;
@@ -42,10 +37,6 @@ export interface ListState {
 export interface ScrollRef {
     scrollTo: (x: number, y: number) => void;
     getScrollRef: () => any;
-}
-export declare enum ScrollDirection {
-    UP = "up",
-    DOWN = "down"
 }
 export default class InfiniteScroll extends React.Component<ListProps, ListState> {
     scrollWrap: HTMLDivElement | null;
