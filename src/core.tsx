@@ -42,6 +42,7 @@ export interface ListState {
   scrollHeight: number, // 滚动内容的高度
   pullDistance: number, // 下拉距离
   prevLength?: number // 上一个列表的长度
+  prevIsRefreshing?: boolean; // 之前的是否刷新状态
 }
 export interface ScrollRef {
   scrollTo: (x: number, y: number) => void;
@@ -91,34 +92,6 @@ export default class InfiniteScroll extends React.Component<ListProps, ListState
     this.removeEvents()
   }
 
-  public setScroll = (x: number, y: number) => {
-    if (!this.scrollRoot) return;
-    setScroll(this.scrollRoot, x, y);
-  }
-
-  addEvents = () => {
-    const target = this.getScrollableTarget();
-    // 绑定事件
-    const {
-      scrollableParent,
-      height,
-      inverse
-    } = this.props;
-    this.scrollRoot = target;
-    const scrollHeight = target?.scrollHeight;
-    if (target) {
-      this.initDom(target);
-      // 节点设置警告
-      if (scrollableParent && height) {
-        console.error(`"scrollableParent" and "height" only need one`);
-      }
-    }
-    // 如果设置反向加载则初始化时滚到底部
-    if (inverse && scrollHeight) {
-      this.setScroll(0, scrollHeight);
-    }
-  }
-
   removeEvents = () => {
     const {
       pullDownToRefresh
@@ -151,11 +124,18 @@ export default class InfiniteScroll extends React.Component<ListProps, ListState
     }
   };
   // 初始化绑定事件(滚动节点可能是异步也可能是同步)
-  initDom = (scrollableParent: HTMLElement) => {
+  addEvents = (scrollableParent: HTMLElement) => {
+    if (!scrollableParent) return;
+    // 节点设置警告
+    if (this.props?.scrollableParent && this.props?.height) {
+      console.error(`"scrollableParent" and "height" only need one`);
+    }
     const {
       pullDownToRefresh,
-      forbidTrigger
+      forbidTrigger,
+      inverse
     } = this.props;
+    const scrollHeight = scrollableParent?.scrollHeight;
     if (forbidTrigger) return;
     // 滚动父节点绑定事件(文档根节点不能绑定事件)
     const el: any = [document.documentElement, document.body].includes(scrollableParent) ? (document || window) : scrollableParent;
@@ -168,6 +148,11 @@ export default class InfiniteScroll extends React.Component<ListProps, ListState
       addEvent(document, dragEventFor.move, this.onMove);
       addEvent(document, dragEventFor.stop, this.onEnd);
     }
+    // 如果设置反向加载则初始化时滚到底部
+    if (inverse && scrollHeight) {
+      setScroll(scrollableParent, 0, scrollHeight);
+    }
+    this.scrollRoot = scrollableParent;
   };
   componentDidUpdate(prevProps: ListProps, prevState: ListState) {
     // 长度没有变化
@@ -186,17 +171,24 @@ export default class InfiniteScroll extends React.Component<ListProps, ListState
     const newScrollRoot = this.getScrollableTarget();
     if (newScrollRoot !== this.scrollRoot) {
       removeEvent(this.event, 'scroll', this.onScrollListener);
-      this.addEvents();
+      this.addEvents(newScrollRoot);
     }
     this.updateList();
   }
 
   static getDerivedStateFromProps(nextProps: ListProps, prevState: ListState) {
     const dataLengthChanged = nextProps.length !== prevState.prevLength;
+    const refreshingChange = nextProps?.isRefreshing !== prevState?.prevIsRefreshing;
     if (dataLengthChanged) {
       return {
         ...prevState,
-        prevLength: nextProps.length,
+        prevLength: nextProps.length
+      };
+    }
+    if (refreshingChange) {
+      return {
+        ...prevState,
+        prevIsRefreshing: nextProps.isRefreshing
       };
     }
     return null;
@@ -215,13 +207,15 @@ export default class InfiniteScroll extends React.Component<ListProps, ListState
       loading,
       scrollHeight,
     } = this.state;
+    const newScrollHeight = target.scrollHeight;
+    const restHeight = newScrollHeight - scrollHeight;
     // 反向加载的时候需要重置滚动高度
     if (inverse && loading && this.isElementAtTop(target, thresholdValue)) {
-      setScroll(target, 0, (scrollHeight && target.scrollHeight - scrollHeight) ? target.scrollHeight - scrollHeight : 50);
+      setScroll(target, 0, restHeight ? restHeight : 50);
     }
     this.setState({
       loading: false,
-      scrollHeight: target.scrollHeight
+      scrollHeight: newScrollHeight
     });
   };
   // 监听滚动事件

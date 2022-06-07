@@ -44,6 +44,8 @@
     ],
     // 编译静态属性和类属性
     ["@babel/plugin-proposal-class-properties", { "loose": true }],
+    ["@babel/plugin-proposal-private-property-in-object", { "loose": true }],
+    ["@babel/plugin-proposal-private-methods", { "loose": true }],
     // babel-plugin-import配置类库按需加载
     [
       "import",

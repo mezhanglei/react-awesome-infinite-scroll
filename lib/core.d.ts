@@ -33,6 +33,7 @@ export interface ListState {
     scrollHeight: number;
     pullDistance: number;
     prevLength?: number;
+    prevIsRefreshing?: boolean;
 }
 export interface ScrollRef {
     scrollTo: (x: number, y: number) => void;
@@ -51,11 +52,9 @@ export default class InfiniteScroll extends React.Component<ListProps, ListState
         maxPullDown: number;
     };
     componentWillUnmount(): void;
-    setScroll: (x: number, y: number) => void;
-    addEvents: () => void;
     removeEvents: () => void;
     getScrollableTarget: () => any;
-    initDom: (scrollableParent: HTMLElement) => void;
+    addEvents: (scrollableParent: HTMLElement) => void;
     componentDidUpdate(prevProps: ListProps, prevState: ListState): void;
     static getDerivedStateFromProps(nextProps: ListProps, prevState: ListState): {
         prevLength: number;
@@ -63,6 +62,14 @@ export default class InfiniteScroll extends React.Component<ListProps, ListState
         loading: boolean;
         scrollHeight: number;
         pullDistance: number;
+        prevIsRefreshing?: boolean | undefined;
+    } | {
+        prevIsRefreshing: boolean | undefined;
+        refreshType: COMPONENT_TYPE;
+        loading: boolean;
+        scrollHeight: number;
+        pullDistance: number;
+        prevLength?: number | undefined;
     } | null;
     updateList: () => void;
     onScrollListener: (event: EventType) => void;

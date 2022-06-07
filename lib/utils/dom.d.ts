@@ -4,6 +4,7 @@
  * @returns
  */
 export declare function getRect(el: HTMLElement): DOMRect;
+export declare const getWindow: (el?: any) => any;
 export declare function getClientXY(el: MouseEvent | TouchEvent | HTMLElement): null | {
     x: number;
     y: number;
@@ -12,7 +13,7 @@ export declare function getClientXY(el: MouseEvent | TouchEvent | HTMLElement): 
  * 获取页面或元素的卷曲滚动(兼容写法)
  * @param el 目标元素
  */
-export declare function getScroll(el?: HTMLElement): undefined | {
+export declare function getScroll(el: HTMLElement): undefined | {
     x: number;
     y: number;
 };
