@@ -78,6 +78,8 @@ export default class InfiniteScroll extends React.Component<ListProps, ListState
     onStart: (evt: EventType) => void;
     onMove: (evt: EventType) => void;
     onEnd: (evt: EventType) => void;
+    startRefresh: () => void;
+    endRefresh: () => void;
     resetDrag: () => void;
     setDrag: (move: number) => void;
     render(): JSX.Element;

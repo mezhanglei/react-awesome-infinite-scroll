@@ -103,8 +103,6 @@ export default class InfiniteScroll extends React.Component<ListProps, ListState
         removeEvent(event, dragEventFor.start, this.onStart);
         removeEvent(event, dragEventFor.move, this.onMove);
         removeEvent(document, dragEventFor.stop, this.onEnd);
-        // 取消raf
-        Raf.cancelRaf(this.resetDrag);
       }
     }
   };
@@ -155,25 +153,26 @@ export default class InfiniteScroll extends React.Component<ListProps, ListState
     this.scrollRoot = scrollableParent;
   };
   componentDidUpdate(prevProps: ListProps, prevState: ListState) {
-    // 长度没有变化
-    const lengthNoChange = this.props.length === prevProps.length;
+    // 长度是否变化
+    const lengthChange = this.props.length !== prevProps.length;
     // 刷新状态是否变化
     const refreshingChange = this.props?.isRefreshing !== prevProps?.isRefreshing;
     if (refreshingChange) {
       if (!this.props?.isRefreshing) {
-        this.setState({
-          refreshType: "refreshEnd"
-        })
+        this.endRefresh();
+      } else {
+        this.startRefresh();
       }
     }
-    if (lengthNoChange) return;
-    // 滚动节点出现后再重新监听事件
-    const newScrollRoot = this.getScrollableTarget();
-    if (newScrollRoot !== this.scrollRoot) {
-      removeEvent(this.event, 'scroll', this.onScrollListener);
-      this.addEvents(newScrollRoot);
-    }
-    this.updateList();
+    if (lengthChange) {
+      // 滚动节点出现后再重新监听事件
+      const newScrollRoot = this.getScrollableTarget();
+      if (newScrollRoot !== this.scrollRoot) {
+        removeEvent(this.event, 'scroll', this.onScrollListener);
+        this.addEvents(newScrollRoot);
+      }
+      this.updateList();
+    };
   }
 
   static getDerivedStateFromProps(nextProps: ListProps, prevState: ListState) {
@@ -328,28 +327,39 @@ export default class InfiniteScroll extends React.Component<ListProps, ListState
   };
   onEnd = (evt: EventType) => {
     const {
-      refreshFunction,
-    } = this.props;
-    const {
       pullDistance
     } = this.state;
+    this.dragging = false;
+    if (Math.abs(pullDistance) > 0) {
+      this.startRefresh();
+      this.resetDrag();
+    }
+  };
+  // 执行刷新
+  startRefresh = () => {
+    if (this.dragging) return;
+    this.setState({
+      refreshType: "refreshing"
+    });
+    const {
+      refreshFunction,
+    } = this.props;
     if (typeof refreshFunction !== 'function') {
       throw new Error(`"refreshFunction" is not function or missing`);
     }
-    this.dragging = false;
-    if (Math.abs(pullDistance) > 0) {
-      this.setState({
-        refreshType: "refreshing"
-      })
-      refreshFunction && refreshFunction();
-      Raf.setRaf(this.resetDrag);
-      this.startY = 0;
-      this.setState({
-        pullDistance: 0
-      })
-    }
-  };
+    refreshFunction && refreshFunction();
+  }
+  // 结束刷新
+  endRefresh = () => {
+    this.setState({
+      refreshType: "refreshEnd"
+    });
+  }
   resetDrag = () => {
+    this.startY = 0;
+    this.setState({
+      pullDistance: 0
+    });
     const childrenContainer = this.childrenWrap;
     if (childrenContainer) {
       childrenContainer.style.transform = 'none';
