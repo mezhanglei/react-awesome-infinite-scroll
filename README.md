@@ -2,7 +2,7 @@
 
 English | [中文说明](./README_CN.md)
 
-[![Version](https://img.shields.io/badge/version-0.1.6-green)](https://www.npmjs.com/package/react-awesome-infinite-scroll)
+[![Version](https://img.shields.io/badge/version-0.1.7-green)](https://www.npmjs.com/package/react-awesome-infinite-scroll)
 
 # Introduction?
 
