@@ -16,8 +16,6 @@ const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer');
 const StyleLintPlugin = require("stylelint-webpack-plugin");
 // eslint格式检查
 const ESLintPlugin = require('eslint-webpack-plugin');
-// 忽略node_modules中的模块打包进来
-const nodeExternals = require('webpack-node-externals');
 
 // 引入配置
 const configs = require('./configs.js');
@@ -58,7 +56,26 @@ module.exports = {
       type: 'umd', // 这将在所有模块定义下暴露你的库, 允许它与 CommonJS、AMD 和作为全局变量工作
     }
   },
-  externals: isDev ? undefined :[nodeExternals()],
+  externals: isDev ? undefined : {
+    'react': {
+      'commonjs': 'react',
+      'commonjs2': 'react',
+      'amd': 'react',
+      'root': 'React'
+    },
+    'react-dom': {
+      'commonjs': 'react-dom',
+      'commonjs2': 'react-dom',
+      'amd': 'react-dom',
+      'root': 'ReactDOM'
+    },
+    'react-router-dom': {
+      'commonjs': 'react-router-dom',
+      'commonjs2': 'react-router-dom',
+      'amd': 'react-router-dom',
+      'root': 'ReactRouterDOM'
+    }
+  },
   resolve: {
     // 后缀，引入时可以默认不写
     extensions: [".ts", ".tsx", ".js", "jsx", ".json", ".less"],
@@ -169,12 +186,6 @@ module.exports = {
   },
   // 插件
   plugins: [
-    // 全局变量暴露
-    new webpack.ProvidePlugin({
-      React: "react",
-      ReactDOM: "react-dom",
-      ReactRouterDOM: "react-router-dom",
-    }),
     // 设置项目的全局变量,String类型, 如果值是个字符串会被当成一个代码片段来使用, 如果不是,它会被转化为字符串(包括函数)
     new webpack.DefinePlugin({
       'process.env.MOCK': process.env.MOCK,
