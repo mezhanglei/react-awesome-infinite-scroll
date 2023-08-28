@@ -8,10 +8,6 @@ const resolveApp = relativePath => path.resolve(appRoot, relativePath);
 const srcPath = resolveApp('src');
 // 开发环境入口
 const examplePath = resolveApp('example');
-// 静态资源所在目录
-const staticPath = resolveApp('static');
-// 全局less所在目录
-const lessPath = resolveApp('less');
 // 打包输出目录
 const outputPath = resolveApp('lib');
 // 开发环境下的输出目录
@@ -28,8 +24,6 @@ module.exports = {
   appRoot,
   srcPath,
   examplePath,
-  staticPath,
-  lessPath,
   outputPath,
   devOutputPath,
   nodeModulesPath,
@@ -39,7 +33,6 @@ module.exports = {
   babelrcPath: path.join(appRoot, './.babelrc'),
   eslintrcPath: path.join(appRoot, "./.eslintrc.{js,ts}"),
   stylelintrcPath: path.join(appRoot, "./.stylelintrc.js"),
-  assetsPath: '../',
   checkStylePath: ["src/**/*.{css,sass,scss,less}"],
   mockPath: path.join(srcPath, 'mock')
 };

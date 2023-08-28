@@ -1,6 +1,6 @@
 {
   "name": "react-awesome-infinite-scroll",
-  "version": "0.1.9",
+  "version": "0.1.10",
   "description": "简单好用的滚动列表加载组件",
   "main": "lib/index.js",
   "types": "./lib/index.d.ts",
@@ -93,6 +93,10 @@
     "react-dom": "^16.14.0",
     "react-loadable": "^5.5.0",
     "react-router-dom": "^5.2.0"
+  },
+  "peerDependencies": {
+    "react": ">=16.9.0",
+    "react-dom": ">=16.9.0"
   },
   "browserslist": [
     "defaults",

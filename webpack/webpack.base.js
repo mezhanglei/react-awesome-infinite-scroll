@@ -35,7 +35,7 @@ const cssLoader = isDev ? 'style-loader' : {
   loader: MiniCssExtractPlugin.loader,
   options: {
     // 修改打包后目录中css文件中静态资源的引用的基础路径
-    publicPath: paths.assetsPath,
+    publicPath: "../",
   },
 };
 
@@ -191,15 +191,6 @@ module.exports = {
       'process.env.MOCK': process.env.MOCK,
       'process.env.PUBLIC_PATH': JSON.stringify(paths.publicPath || '/')
     }),
-    // 将目标目录里的文件直接拷贝到输出dist目录
-    // new CopyWebpackPlugin({
-    //   patterns: [{
-    //     from: paths.staticPath,
-    //     to: path.join(outputPath, 'static')
-    //     // 忽略文件名
-    //     // ignore: ['.*']
-    //   }]
-    // }),
     // 统计信息提示插件(比如错误或者警告会用带颜色的字体来显示,更加友好)
     new FriendlyErrorsWebpackPlugin(),
     // 热更新
