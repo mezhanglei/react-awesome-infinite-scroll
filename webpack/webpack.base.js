@@ -195,17 +195,18 @@ module.exports = {
     new FriendlyErrorsWebpackPlugin(),
     // 热更新
     ...(isDev ? [
-      ...(configs.useEslint ? [new ESLintPlugin({ eslintPath: paths.eslintrcPath })] : []),
-      // 样式检查
-      ...(configs.useStylelint ? [new StyleLintPlugin({
+      new ESLintPlugin({ eslintPath: paths.eslintrcPath }),
+      new StyleLintPlugin({
         // 要检查scss的根目录
         context: paths.appRoot,
+        // 1.扫描要检查的文件, 字符串或者数组, 将被glob接收所以支持style/**/*.scss这类语法
+        // 2.我们也可以通过在package.json中配置命令的方式(--ext表示扩展名)
         files: paths.checkStylePath,
         // 配置文件的路径
         configFile: paths.stylelintrcPath,
         // 如果为true，则在全局构建过程中发生任何stylelint错误时结束构建过程 所以一般为false
         failOnError: false,
-      })] : []),
+      }),
       new HtmlWebpackPlugin({
         filename: `index.html`,
         template: paths.appHtml,
