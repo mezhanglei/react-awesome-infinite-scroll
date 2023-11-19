@@ -12,10 +12,8 @@ const FriendlyErrorsWebpackPlugin = require("friendly-errors-webpack-plugin");
 // const CopyWebpackPlugin = require("copy-webpack-plugin");
 // (构建过程优化)webpack体积分析插件(会单独打开一个端口8888的页面显示体积构造图)
 const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer');
-// stylelint的样式检查
-const StyleLintPlugin = require("stylelint-webpack-plugin");
 // eslint格式检查
-const ESLintPlugin = require('eslint-webpack-plugin');
+const ESLintWebpackPlugin = require('eslint-webpack-plugin');
 
 // 引入配置
 const configs = require('./configs.js');
@@ -161,8 +159,8 @@ module.exports = {
         ],
       },
       {
-        test: /\.(png|svg|jpg|gif|jpeg|ico)$/i,
-        exclude: nodeModulesRegex,
+        test: /\.(png|jpg|gif|jpeg|ico)$/i,
+        exclude: [nodeModulesRegex],
         type: "asset",
         parser: {
           dataUrlCondition: {
@@ -173,6 +171,18 @@ module.exports = {
         generator: {
           filename: "img/[name].[ext]"
         }
+      },
+      {
+        test: /\.svg$/i,
+        exclude: [nodeModulesRegex],
+        type: 'asset',
+        resourceQuery: /url/, // *.svg?url
+      },
+      {
+        test: /\.svg$/,
+        exclude: [nodeModulesRegex],
+        resourceQuery: { not: [/url/] }, // exclude react component if *.svg?url
+        use: ['@svgr/webpack'],
       },
       {
         test: /\.(woff|woff2|eot|ttf|otf)$/,
@@ -195,17 +205,8 @@ module.exports = {
     new FriendlyErrorsWebpackPlugin(),
     // 热更新
     ...(isDev ? [
-      new ESLintPlugin({ eslintPath: paths.eslintrcPath }),
-      new StyleLintPlugin({
-        // 要检查scss的根目录
-        context: paths.appRoot,
-        // 1.扫描要检查的文件, 字符串或者数组, 将被glob接收所以支持style/**/*.scss这类语法
-        // 2.我们也可以通过在package.json中配置命令的方式(--ext表示扩展名)
-        files: paths.checkStylePath,
-        // 配置文件的路径
-        configFile: paths.stylelintrcPath,
-        // 如果为true，则在全局构建过程中发生任何stylelint错误时结束构建过程 所以一般为false
-        failOnError: false,
+      new ESLintWebpackPlugin({
+        context: paths.appRoot
       }),
       new HtmlWebpackPlugin({
         filename: `index.html`,
