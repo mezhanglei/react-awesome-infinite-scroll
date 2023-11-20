@@ -196,8 +196,10 @@ module.exports = {
   plugins: [
     // 设置项目的全局变量,String类型, 如果值是个字符串会被当成一个代码片段来使用, 如果不是,它会被转化为字符串(包括函数)
     new webpack.DefinePlugin({
-      'process.env.MOCK': process.env.MOCK,
-      'process.env.PUBLIC_PATH': JSON.stringify(paths.publicPath || '/')
+      'process.env': {
+        MOCK: process.env.MOCK,
+        PUBLIC_PATH: JSON.stringify(paths.publicPath || '/')
+      }
     }),
     // 热更新
     ...(isDev ? [
