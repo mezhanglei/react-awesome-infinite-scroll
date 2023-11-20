@@ -6,8 +6,6 @@ const webpack = require("webpack");
 // css文件指纹插件提取css，作用是缓存css并解决样式闪动问题 因为只在编译阶段作用 所以不适用于热更新 但在生产环境无需配置热更新也没多大问题
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
-// 对webpack打包的信息进行警告,错误的明显标识提示 可以选择使用或不使用
-const FriendlyErrorsWebpackPlugin = require("friendly-errors-webpack-plugin");
 // 通过CopyWebpackPlugin将目标文件夹里的静态资源拷贝到目标文件夹
 // const CopyWebpackPlugin = require("copy-webpack-plugin");
 // (构建过程优化)webpack体积分析插件(会单独打开一个端口8888的页面显示体积构造图)
@@ -76,7 +74,7 @@ module.exports = {
   },
   resolve: {
     // 后缀，引入时可以默认不写
-    extensions: [".ts", ".tsx", ".js", "jsx", ".json", ".less"],
+    extensions: [".ts", ".tsx", ".js", ".jsx", ".json", ".less"],
     alias: {
       "@": `${paths.srcPath}`,
       "src": `${paths.srcPath}`,
@@ -201,8 +199,6 @@ module.exports = {
       'process.env.MOCK': process.env.MOCK,
       'process.env.PUBLIC_PATH': JSON.stringify(paths.publicPath || '/')
     }),
-    // 统计信息提示插件(比如错误或者警告会用带颜色的字体来显示,更加友好)
-    new FriendlyErrorsWebpackPlugin(),
     // 热更新
     ...(isDev ? [
       new ESLintWebpackPlugin({
