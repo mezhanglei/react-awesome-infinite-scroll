@@ -11,8 +11,7 @@
     "README_CN.md"
   ],
   "scripts": {
-    "build:typings": "tsc -d --emitDeclarationOnly --target esnext --removeComments false --allowJs false --skipLibCheck true --suppressImplicitAnyIndexErrors true --declarationDir ./lib",
-    "build": "cross-env NODE_ENV=prod webpack --progress --config ./webpack/webpack.prod.js",
+    "build": "cross-env NODE_ENV=prod webpack --progress --config ./webpack/webpack.prod.js && tsc -d",
     "stats": "cross-env NODE_ENV=prod webpack --progress --config ./webpack/webpack.prod.js --json > stats.json",
     "start": "cross-env NODE_ENV=dev webpack serve --config ./webpack/webpack.dev.js",
     "lint": "eslint --ext=.js,.ts,.jsx,.tsx src/",

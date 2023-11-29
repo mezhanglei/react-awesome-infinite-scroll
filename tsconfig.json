@@ -72,7 +72,6 @@
     /* Advanced Options */
     "skipLibCheck": true,                     /* 忽略所有库中的声明文件（ *.d.ts）的类型检查。 */
     "forceConsistentCasingInFileNames": true,  /* 强制区分大小写 */
-    "suppressImplicitAnyIndexErrors": true     /* 阻止对缺少索引签名的索引对象报错 */
   },
   // 编译的文件位置
   "include": [
