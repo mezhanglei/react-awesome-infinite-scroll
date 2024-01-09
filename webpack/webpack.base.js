@@ -35,17 +35,14 @@ const cssLoader = isDev ? 'style-loader' : {
   },
 };
 
-const outputPath = isDev ? paths.devOutputPath : paths.outputPath;
-const entry = isDev ? `${paths.examplePath}/index` : `${paths.srcPath}/index`;
-
 //  === webpack配置内容 === //
 module.exports = {
-  entry: entry,
+  entry: paths.appEntry,
   context: paths.appRoot,
   target: ["web", "es5"],
   output: {
-    clean: !isDev ? true : false, // 在生成文件之前清空 output 目录
-    path: outputPath,
+    clean: isDev ? false : true, // 在生成文件之前清空 output 目录
+    path: paths.outputPath,
     filename: "index.js",
     publicPath: paths.publicPath,
     library: isDev ? undefined : {
@@ -78,7 +75,6 @@ module.exports = {
     alias: {
       "@": `${paths.srcPath}`,
       "src": `${paths.srcPath}`,
-      "example": `${paths.examplePath}`
     }
   },
   // 用来指定loaders的匹配规则和指定使用的loaders名称
@@ -197,39 +193,38 @@ module.exports = {
     // 设置项目的全局变量,String类型, 如果值是个字符串会被当成一个代码片段来使用, 如果不是,它会被转化为字符串(包括函数)
     new webpack.DefinePlugin({
       'process.env': {
-        MOCK: process.env.MOCK,
-        PUBLIC_PATH: JSON.stringify(paths.publicPath || '/')
+        MOCK: process.env.MOCK
       }
     }),
-    // 热更新
-    ...(isDev ? [
-      new ESLintWebpackPlugin({
-        context: paths.appRoot
-      }),
-      new HtmlWebpackPlugin({
-        filename: `index.html`,
-        template: paths.appHtml,
-        inject: true,
-        minify: {
-          html5: true,
-          caseSensitive: false,
-          removeAttributeQuotes: !isDev ? true : false,
-          collapseWhitespace: !isDev ? true : false,
-          preserveLineBreaks: false,
-          minifyCSS: false,
-          minifyJS: true,
-          removeComments: true
-        },
-        commonJs: [
-        ],
-        commonCSS: [
-        ]
-      })
-    ] : [
-      new MiniCssExtractPlugin({
-        filename: 'css/main.css'
-      }),
-      ...(configs.isAnalyz ? [new BundleAnalyzerPlugin()] : [])
-    ])
-  ]
+    isDev &&
+    new ESLintWebpackPlugin({
+      context: paths.appRoot
+    }),
+    isDev &&
+    new HtmlWebpackPlugin({
+      filename: `index.html`,
+      template: paths.appHtml,
+      inject: true,
+      minify: {
+        html5: true,
+        caseSensitive: false,
+        removeAttributeQuotes: !isDev ? true : false,
+        collapseWhitespace: !isDev ? true : false,
+        preserveLineBreaks: false,
+        minifyCSS: false,
+        minifyJS: true,
+        removeComments: true
+      },
+      commonJs: [
+      ],
+      commonCSS: [
+      ]
+    }),
+    !isDev &&
+    new MiniCssExtractPlugin({
+      filename: 'css/main.css'
+    }),
+    !isDev && configs.isAnalyz &&
+    new BundleAnalyzerPlugin()
+  ].filter(Boolean)
 };

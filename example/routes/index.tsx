@@ -19,11 +19,9 @@ const routes = [
 
 // 路由组件
 export default function RouteComponent() {
-  // BrowserRouter时需要设置basename
-  const basename = Router.name == "BrowserRouter" ? process.env.PUBLIC_PATH : "";
 
   return (
-    <Router basename={basename}>
+    <Router>
       <Switch>
         {routes.map((item: MyRouteProps, index) => {
           return <Route
